@@ -177,7 +177,7 @@ if ($searchQuery !== '') {
                             
                             <div class="card-meta-info" style="border: none; padding-top: 0; margin-top: 0;">
                                 <?php
-                                $isAllDay = ($start === '00:00' && $end === '23:59');
+                                $isAllDay = ($start === '08:30' && $end === '16:30');
                                 $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
                                 ?>
                                 <div class="meta-item"><i class="fa-regular fa-clock"></i> <?= $timeStr ?></div>
@@ -272,7 +272,7 @@ if ($searchQuery !== '') {
                             
                             <div class="card-meta-info" style="border: none; padding-top: 0; margin-top: 0;">
                                 <?php
-                                $isAllDay = ($start === '00:00' && $end === '23:59');
+                                $isAllDay = ($start === '08:30' && $end === '16:30');
                                 $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
                                 ?>
                                 <div class="meta-item"><i class="fa-regular fa-clock"></i> <?= $timeStr ?></div>

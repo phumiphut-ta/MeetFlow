@@ -71,7 +71,7 @@ try {
     foreach ($meetings as $idx => $m) {
         $start = substr($m['start_time'], 0, 5);
         $end = substr($m['end_time'], 0, 5);
-        $isAllDay = ($start === '00:00' && $end === '23:59');
+        $isAllDay = ($start === '08:30' && $end === '16:30');
         $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
         
         // Fetch attendees

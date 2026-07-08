@@ -55,7 +55,7 @@ function notifyDiscord($action, $meeting, $attendees = []) {
 
         $startTime = substr($meeting['start_time'], 0, 5);
         $endTime = substr($meeting['end_time'], 0, 5);
-        $isAllDay = ($startTime === '00:00' && $endTime === '23:59');
+        $isAllDay = ($startTime === '08:30' && $endTime === '16:30');
         $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$startTime - $endTime น.";
 
         // Build Attendees list text

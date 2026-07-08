@@ -153,7 +153,7 @@ try {
                     
                     if (isset($meetingsByDay[$day])) {
                         foreach ($meetingsByDay[$day] as $meeting) {
-                            $isAllDay = (substr($meeting['start_time'], 0, 5) === '00:00' && substr($meeting['end_time'], 0, 5) === '23:59');
+                            $isAllDay = (substr($meeting['start_time'], 0, 5) === '08:30' && substr($meeting['end_time'], 0, 5) === '16:30');
                             $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : date('H:i', strtotime($meeting['start_time'])) . ' น.';
                             $isTraining = (strpos(mb_strtolower($meeting['title']), 'อบรม') !== false || strpos(mb_strtolower($meeting['description']), 'อบรม') !== false) ? 'training' : '';
                             
@@ -373,8 +373,8 @@ try {
             const startInput = document.getElementById('start_time');
             const endInput = document.getElementById('end_time');
             if (checked) {
-                startInput.value = "00:00";
-                endInput.value = "23:59";
+                startInput.value = "08:30";
+                endInput.value = "16:30";
                 startInput.readOnly = true;
                 endInput.readOnly = true;
                 startInput.style.opacity = "0.5";
@@ -507,7 +507,7 @@ try {
                         const dateStr = `${parseInt(dateParts[2])} ${monthName} ${thaiYear}`;
                         const start = meeting.start_time.substring(0, 5);
                         const end = meeting.end_time.substring(0, 5);
-                        const isAllDay = (start === '00:00' && end === '23:59');
+                        const isAllDay = (start === '08:30' && end === '16:30');
                         const timeStr = isAllDay ? 'ตลอดทั้งวัน' : `${start} - ${end} น.`;
                         
                         document.getElementById('view_time').innerHTML = `<i class="fa-regular fa-calendar-check"></i> ${dateStr} &nbsp;&nbsp;&nbsp; <i class="fa-regular fa-clock"></i> ${timeStr}`;
@@ -594,7 +594,7 @@ try {
             document.getElementById('meeting_date').value = meeting.meeting_date;
             const startVal = meeting.start_time.substring(0, 5);
             const endVal = meeting.end_time.substring(0, 5);
-            const isAllDay = (startVal === '00:00' && endVal === '23:59');
+            const isAllDay = (startVal === '08:30' && endVal === '16:30');
             document.getElementById('is_all_day').checked = isAllDay;
             toggleAllDay(isAllDay);
             document.getElementById('start_time').value = startVal;
