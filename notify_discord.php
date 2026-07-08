@@ -135,19 +135,42 @@ function notifyDiscord($action, $meeting, $attendees = []) {
             ]
         ];
 
-        // Send CURL request to Discord
-        $ch = curl_init($webhookUrl);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5); // Short timeout to prevent blocking user request
-
-        $response = curl_exec($ch);
-        curl_close($ch);
-
+        // Send request to Discord (with robust failover if cURL extension is disabled on IIS)
+        if (function_exists('curl_init')) {
+            $ch = curl_init($webhookUrl);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5); // Short timeout to avoid blocking main thread
+            
+            // Bypass SSL certificate check (essential for Windows Server IIS environments without CA bundle setups)
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            
+            $response = curl_exec($ch);
+            curl_close($ch);
+        } else {
+            // Fallback to PHP native HTTP stream wrapper if cURL extension is not enabled in php.ini
+            $options = [
+                'http' => [
+                    'header'  => "Content-Type: application/json\r\n",
+                    'method'  => 'POST',
+                    'content' => json_encode($payload),
+                    'timeout' => 5,
+                    'ignore_errors' => true
+                ],
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                ]
+            ];
+            $context  = stream_context_create($options);
+            @file_get_contents($webhookUrl, false, $context);
+        }
+        
     } catch (Exception $e) {
         // Fail silently to avoid interrupting the main application save process
         error_log("Discord notify failed: " . $e->getMessage());

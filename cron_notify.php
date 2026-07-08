@@ -116,19 +116,61 @@ try {
         ]
     ];
 
-    // Dispatch webhook curl
-    $ch = curl_init($webhookUrl);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    // Dispatch webhook (with robust failover if cURL extension is disabled on IIS)
+    $success = false;
+    $res = '';
+    $httpCode = 0;
     
-    $res = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+    if (function_exists('curl_init')) {
+        $ch = curl_init($webhookUrl);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        
+        // Bypass SSL check (essential for IIS Windows environments lacking SSL root cert configurations)
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        
+        $res = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode >= 200 && $httpCode < 300) {
+            $success = true;
+        }
+    } else {
+        // Fallback to PHP native stream context if cURL extension is not enabled in php.ini
+        $options = [
+            'http' => [
+                'header'  => "Content-Type: application/json\r\n",
+                'method'  => 'POST',
+                'content' => json_encode($payload),
+                'timeout' => 10,
+                'ignore_errors' => true
+            ],
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ]
+        ];
+        $context = stream_context_create($options);
+        $res = @file_get_contents($webhookUrl, false, $context);
+        
+        // Parse HTTP code from $http_response_header
+        if (isset($http_response_header)) {
+            $parts = explode(' ', $http_response_header[0]);
+            if (count($parts) > 1) {
+                $httpCode = intval($parts[1]);
+                if ($httpCode >= 200 && $httpCode < 300) {
+                    $success = true;
+                }
+            }
+        }
+    }
 
-    if ($httpCode >= 200 && $httpCode < 300) {
+    if ($success) {
         echo "Daily notification sent successfully to Discord.\n";
         updateLastRunDate($pdo, $todayDate);
     } else {
