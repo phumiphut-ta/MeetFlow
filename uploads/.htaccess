@@ -1,0 +1,16 @@
+# Disable PHP execution in the uploads directory
+<FilesMatch "\.(php|php5|php7|php8|phtml|pl|py|jsp|asp|sh|cgi)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# For Apache modules that execute PHP, turn off engine
+<IfModule mod_php5.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>

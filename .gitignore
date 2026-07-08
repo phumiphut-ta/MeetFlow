@@ -1,0 +1,10 @@
+# Ignore local SQLite database containing mock test data
+meetflow.sqlite
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore local test files or temporary outputs
+*.log
+test_output.*
