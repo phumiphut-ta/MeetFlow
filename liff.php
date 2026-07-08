@@ -176,7 +176,11 @@ if ($searchQuery !== '') {
                             <h4><?= htmlspecialchars($meeting['title']) ?></h4>
                             
                             <div class="card-meta-info" style="border: none; padding-top: 0; margin-top: 0;">
-                                <div class="meta-item"><i class="fa-regular fa-clock"></i> <?= $start ?> - <?= $end ?> น.</div>
+                                <?php
+                                $isAllDay = ($start === '00:00' && $end === '23:59');
+                                $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
+                                ?>
+                                <div class="meta-item"><i class="fa-regular fa-clock"></i> <?= $timeStr ?></div>
                                 <?php if ($meeting['doc_no']): ?>
                                     <div class="meta-item"><i class="fa-solid fa-file-invoice"></i> <?= htmlspecialchars($meeting['doc_no']) ?></div>
                                 <?php endif; ?>
@@ -267,7 +271,11 @@ if ($searchQuery !== '') {
                             <h4><?= htmlspecialchars($meeting['title']) ?></h4>
                             
                             <div class="card-meta-info" style="border: none; padding-top: 0; margin-top: 0;">
-                                <div class="meta-item"><i class="fa-regular fa-clock"></i> <?= $start ?> - <?= $end ?> น.</div>
+                                <?php
+                                $isAllDay = ($start === '00:00' && $end === '23:59');
+                                $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
+                                ?>
+                                <div class="meta-item"><i class="fa-regular fa-clock"></i> <?= $timeStr ?></div>
                                 <?php if ($meeting['doc_no']): ?>
                                     <div class="meta-item"><i class="fa-solid fa-file-invoice"></i> <?= htmlspecialchars($meeting['doc_no']) ?></div>
                                 <?php endif; ?>

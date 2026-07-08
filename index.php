@@ -153,11 +153,12 @@ try {
                     
                     if (isset($meetingsByDay[$day])) {
                         foreach ($meetingsByDay[$day] as $meeting) {
-                            $timeStr = date('H:i', strtotime($meeting['start_time']));
+                            $isAllDay = (substr($meeting['start_time'], 0, 5) === '00:00' && substr($meeting['end_time'], 0, 5) === '23:59');
+                            $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : date('H:i', strtotime($meeting['start_time'])) . ' น.';
                             $isTraining = (strpos(mb_strtolower($meeting['title']), 'อบรม') !== false || strpos(mb_strtolower($meeting['description']), 'อบรม') !== false) ? 'training' : '';
                             
                             echo '<div class="event-badge ' . $isTraining . '" onclick="viewMeetingDetails(' . $meeting['id'] . ', event)">';
-                            echo '<span class="event-time"><i class="fa-regular fa-clock"></i> ' . $timeStr . ' น.</span>';
+                            echo '<span class="event-time"><i class="fa-regular fa-clock"></i> ' . $timeStr . '</span>';
                             echo '<span class="event-title">' . htmlspecialchars($meeting['title']) . '</span>';
                             echo '</div>';
                         }
@@ -206,13 +207,20 @@ try {
                     <input type="date" id="meeting_date" name="meeting_date" required>
                 </div>
                 <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-weight: 500; font-size: 0.9rem;">เวลาการประชุม / อบรม <span style="color: var(--danger)">*</span></span>
+                        <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; user-select: none; color: var(--text-secondary);">
+                            <input type="checkbox" id="is_all_day" name="is_all_day" onchange="toggleAllDay(this.checked)" style="width: auto; margin: 0;">
+                            ตลอดทั้งวัน
+                        </label>
+                    </div>
                     <div style="display: flex; gap: 8px;">
                         <div style="flex: 1;">
-                            <label for="start_time">เวลาเริ่ม <span style="color: var(--danger)">*</span></label>
+                            <label for="start_time" style="font-size: 0.8rem; color: var(--text-muted);">เวลาเริ่ม</label>
                             <input type="time" id="start_time" name="start_time" required>
                         </div>
                         <div style="flex: 1;">
-                            <label for="end_time">เวลาสิ้นสุด <span style="color: var(--danger)">*</span></label>
+                            <label for="end_time" style="font-size: 0.8rem; color: var(--text-muted);">เวลาสิ้นสุด</label>
                             <input type="time" id="end_time" name="end_time" required>
                         </div>
                     </div>
@@ -360,6 +368,25 @@ try {
             });
         }
 
+        // Toggle All Day times
+        function toggleAllDay(checked) {
+            const startInput = document.getElementById('start_time');
+            const endInput = document.getElementById('end_time');
+            if (checked) {
+                startInput.value = "00:00";
+                endInput.value = "23:59";
+                startInput.readOnly = true;
+                endInput.readOnly = true;
+                startInput.style.opacity = "0.5";
+                endInput.style.opacity = "0.5";
+            } else {
+                startInput.readOnly = false;
+                endInput.readOnly = false;
+                startInput.style.opacity = "1";
+                endInput.style.opacity = "1";
+            }
+        }
+
         // Day click opens Add Form (Only if admin)
         function handleDayClick(dateStr, event) {
             // Prevent event bubbling if clicking event badges
@@ -390,6 +417,8 @@ try {
             }
 
             // Default times
+            document.getElementById('is_all_day').checked = false;
+            toggleAllDay(false);
             document.getElementById('start_time').value = "09:00";
             document.getElementById('end_time').value = "12:00";
 
@@ -478,8 +507,10 @@ try {
                         const dateStr = `${parseInt(dateParts[2])} ${monthName} ${thaiYear}`;
                         const start = meeting.start_time.substring(0, 5);
                         const end = meeting.end_time.substring(0, 5);
+                        const isAllDay = (start === '00:00' && end === '23:59');
+                        const timeStr = isAllDay ? 'ตลอดทั้งวัน' : `${start} - ${end} น.`;
                         
-                        document.getElementById('view_time').innerHTML = `<i class="fa-regular fa-calendar-check"></i> ${dateStr} &nbsp;&nbsp;&nbsp; <i class="fa-regular fa-clock"></i> ${start} - ${end} น.`;
+                        document.getElementById('view_time').innerHTML = `<i class="fa-regular fa-calendar-check"></i> ${dateStr} &nbsp;&nbsp;&nbsp; <i class="fa-regular fa-clock"></i> ${timeStr}`;
                         document.getElementById('view_description').innerText = meeting.description || 'ไม่มีรายละเอียดเพิ่มเติม';
                         document.getElementById('view_doc_no').innerText = meeting.doc_no || '-';
                         document.getElementById('view_office_no').innerText = meeting.office_no || '-';
@@ -561,8 +592,13 @@ try {
             document.getElementById('title').value = meeting.title;
             document.getElementById('description').value = meeting.description || '';
             document.getElementById('meeting_date').value = meeting.meeting_date;
-            document.getElementById('start_time').value = meeting.start_time.substring(0, 5);
-            document.getElementById('end_time').value = meeting.end_time.substring(0, 5);
+            const startVal = meeting.start_time.substring(0, 5);
+            const endVal = meeting.end_time.substring(0, 5);
+            const isAllDay = (startVal === '00:00' && endVal === '23:59');
+            document.getElementById('is_all_day').checked = isAllDay;
+            toggleAllDay(isAllDay);
+            document.getElementById('start_time').value = startVal;
+            document.getElementById('end_time').value = endVal;
             document.getElementById('doc_no').value = meeting.doc_no || '';
             document.getElementById('office_no').value = meeting.office_no || '';
             document.getElementById('meeting_link').value = meeting.meeting_link || '';

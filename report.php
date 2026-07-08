@@ -268,6 +268,8 @@ $thaiMonthsShort = [
                             
                             $start = substr($m['start_time'], 0, 5);
                             $end = substr($m['end_time'], 0, 5);
+                            $isAllDay = ($start === '00:00' && $end === '23:59');
+                            $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
                             
                             $isTraining = (strpos(mb_strtolower($m['title']), 'อบรม') !== false || strpos(mb_strtolower($m['description']), 'อบรม') !== false);
                         ?>
@@ -275,7 +277,7 @@ $thaiMonthsShort = [
                                 <td><?= $idx++ ?></td>
                                 <td>
                                     <strong><?= $dateStr ?></strong><br>
-                                    <span style="font-size: 0.8rem; color: var(--text-secondary);"><?= $start ?> - <?= $end ?> น.</span>
+                                    <span style="font-size: 0.8rem; color: var(--text-secondary);"><?= $timeStr ?></span>
                                 </td>
                                 <td>
                                     <?php if ($isTraining): ?>

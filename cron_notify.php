@@ -71,6 +71,8 @@ try {
     foreach ($meetings as $idx => $m) {
         $start = substr($m['start_time'], 0, 5);
         $end = substr($m['end_time'], 0, 5);
+        $isAllDay = ($start === '00:00' && $end === '23:59');
+        $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
         
         // Fetch attendees
         $stmtAtt = $pdo->prepare("SELECT name FROM meeting_attendees WHERE meeting_id = ? ORDER BY id ASC");
@@ -79,7 +81,7 @@ try {
         
         $attendeeStr = !empty($attendees) ? implode(', ', $attendees) : '-';
         
-        $meetingInfo = "⏰ **เวลา:** $start - $end น.\n";
+        $meetingInfo = "⏰ **เวลา:** $timeStr\n";
         
         if (!empty($m['description'])) {
             $meetingInfo .= "📝 **รายละเอียด:** " . $m['description'] . "\n";

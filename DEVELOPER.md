@@ -81,6 +81,7 @@ erDiagram
 ```
 
 - **Indexes**: Added on `meetings(meeting_date)` for fast calendar monthly query, and composite index on `meetings(doc_no, office_no)` to accelerate search speeds within LINE LIFF queries.
+- **All-day Events Convention**: All-day meetings (ตลอดทั้งวัน) are stored in the database with `start_time = '00:00:00'` and `end_time = '23:59:00'`. The frontend layouts (calendar cells, details modal, LINE LIFF cards, and PDF reports) identify this pattern and display the text `"ตลอดทั้งวัน"` in place of the time range.
 
 ---
 
