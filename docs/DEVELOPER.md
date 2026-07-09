@@ -37,9 +37,10 @@ MeetFlow is a monthly calendar application for scheduling meetings and training 
 | `save_meeting.php` | **Meeting Save Endpoint**: Validates, saves, or edits meeting records. Handles file upload securely. |
 | `delete_meeting.php` | **Meeting Deletion Endpoint**: Triggers database record deletion. |
 | `get_meeting.php` | **Details API**: Endpoint returning JSON representations of a specific meeting for editing. |
+| `migrate.php` | **Database Migration Helper**: Troubleshooting script to verify or alter MySQL/SQLite tables if columns are missing. Outputs raw SQL fallback suggestions if IIS/MySQL lacks ALTER permissions. |
 | `uploads/` | **Uploaded Documents folder**: Storage for PDF/doc attachments. |
 | `uploads/.htaccess` | **Apache Security**: Disables PHP/script execution within the uploads folder to prevent Remote Code Execution (RCE). |
-| `uploads/web.config` | **IIS Security**: Disables handlers/scripts execution inside IIS environments. |
+| `uploads/web.config` | **IIS Security**: Disables execution of script extensions (.php, .asp, etc.) via safe request filtering. |
 
 ---
 
@@ -52,6 +53,7 @@ erDiagram
         int id PK
         string title
         text description
+        string meeting_type
         date meeting_date
         time start_time
         time end_time
@@ -81,6 +83,7 @@ erDiagram
 ```
 
 - **Indexes**: Added on `meetings(meeting_date)` for fast calendar monthly query, and composite index on `meetings(doc_no, office_no)` to accelerate search speeds within LINE LIFF queries.
+- **Meeting Type Classification**: Added `meeting_type` VARCHAR(50) (default `'meeting'`) to distinguish general meetings (`'meeting'`) from training courses (`'training'`) without parsing title/description keywords.
 - **All-day Events Convention**: All-day meetings (ตลอดทั้งวัน) are stored in the database with `start_time = '08:30:00'` and `end_time = '16:30:00'`. The frontend layouts (calendar cells, details modal, LINE LIFF cards, and PDF reports) identify this pattern and display the text `"ตลอดทั้งวัน"` in place of the time range.
 
 ---
@@ -89,9 +92,17 @@ erDiagram
 1. **Password Hashing**: Admin passwords are saved using PHP's native secure password library (`password_hash(..., PASSWORD_DEFAULT)`).
 2. **SQL Injection Prevention**: All SQL statements are processed using PDO Prepared Statements.
 3. **Uploads Folder Protection (RCE prevention)**:
-   - `web.config` blocks execution handlers:
+   - `web.config` blocks direct requests to scripting extensions using request filtering, preventing 500 errors on locked IIS handlers:
      ```xml
-     <handlers><clear /><add name="StaticFile" path="*" verb="*" modules="StaticFileModule,DirectoryListingModule" resourceType="Either" /></handlers>
+     <security>
+         <requestFiltering>
+             <fileExtensions>
+                 <add fileExtension=".php" allowed="false" />
+                 <add fileExtension=".asp" allowed="false" />
+                 <add fileExtension=".aspx" allowed="false" />
+             </fileExtensions>
+         </requestFiltering>
+     </security>
      ```
    - `.htaccess` overrides engine settings:
      ```apache
