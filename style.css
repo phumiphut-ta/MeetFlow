@@ -820,7 +820,22 @@ select:focus {
         justify-content: center;
     }
     .header-actions {
+        display: flex;
+        flex-wrap: wrap;
         justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+    .header-actions .btn {
+        flex: 1 1 calc(50% - 8px); /* 2 columns grid on mobile */
+        justify-content: center;
+        text-align: center;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+    .header-actions .btn-danger {
+        flex: 1 1 100%; /* Stretch logout button full width */
     }
     
     .calendar-controls {
