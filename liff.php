@@ -90,7 +90,7 @@ foreach ($targetList as $meeting) {
 }
 
 // Helper function to render a group of LIFF meeting cards
-function renderLiffMeetingsGroup($meetingsList, $thaiMonths) {
+function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
     foreach ($meetingsList as $meeting) {
         // Parse date to Thai format
         $dateParts = explode('-', $meeting['meeting_date']);
@@ -108,7 +108,7 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths) {
         $isAllDay = ($start === '08:30' && $end === '16:30');
         $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
         ?>
-        <div class="meeting-card" onclick="toggleCard(this)">
+        <div class="meeting-card <?= $isPast ? 'past-card' : '' ?>" onclick="toggleCard(this)">
             <div class="card-header">
                 <span class="card-date-badge"><i class="fa-regular fa-calendar"></i> <?= $dateStr ?></span>
                 <?= $typeBadge ?>
@@ -253,6 +253,17 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths) {
             margin-bottom: 12px;
             font-weight: 700;
         }
+        .meeting-card.past-card {
+            opacity: 0.5;
+            filter: grayscale(40%);
+            border-left-color: var(--text-muted);
+            transition: opacity 0.2s ease, filter 0.2s ease;
+        }
+        .meeting-card.past-card:hover,
+        .meeting-card.past-card.expanded {
+            opacity: 0.9;
+            filter: none;
+        }
     </style>
 </head>
 <body class="liff-body">
@@ -314,7 +325,7 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths) {
                 <!-- 5. ผ่านไปแล้ว -->
                 <?php if (count($groupedMeetings['past']) > 0): ?>
                     <h4 class="group-heading" style="color: var(--text-muted);"><i class="fa-solid fa-clock-rotate-left"></i> ผ่านไปแล้ว</h4>
-                    <?php renderLiffMeetingsGroup($groupedMeetings['past'], $thaiMonths); ?>
+                    <?php renderLiffMeetingsGroup($groupedMeetings['past'], $thaiMonths, true); ?>
                 <?php endif; ?>
 
             <?php else: ?>
