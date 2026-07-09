@@ -38,9 +38,9 @@ try {
     }
 
     if ($type === 'meeting') {
-        $sql .= " AND (title NOT LIKE '%อบรม%' AND description NOT LIKE '%อบรม%')";
+        $sql .= " AND meeting_type = 'meeting'";
     } elseif ($type === 'training') {
-        $sql .= " AND (title LIKE '%อบรม%' OR description LIKE '%อบรม%')";
+        $sql .= " AND meeting_type = 'training'";
     }
 
     $sql .= " ORDER BY meeting_date ASC, start_time ASC";
@@ -461,7 +461,7 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                     $isAllDay = ($start === '08:30' && $end === '16:30');
                     $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";
                     
-                    $isTraining = (strpos(mb_strtolower($m['title']), 'อบรม') !== false || strpos(mb_strtolower($m['description']), 'อบรม') !== false);
+                    $isTraining = (isset($m['meeting_type']) && $m['meeting_type'] === 'training');
                 ?>
                     <tr>
                         <td><?= $idx++ ?></td>

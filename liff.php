@@ -164,7 +164,7 @@ if ($searchQuery !== '') {
                         $end = date('H:i', strtotime($meeting['end_time']));
                         
                         // Check if it's training
-                        $isTraining = (strpos(mb_strtolower($meeting['title']), 'อบรม') !== false || strpos(mb_strtolower($meeting['description']), 'อบรม') !== false);
+                        $isTraining = (isset($meeting['meeting_type']) && $meeting['meeting_type'] === 'training');
                         $typeBadge = $isTraining ? '<span class="card-time-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success);"><i class="fa-solid fa-graduation-cap"></i> วันฝึกอบรม</span>' : '<span class="card-time-badge" style="background: rgba(99, 102, 241, 0.15); color: var(--primary-light);"><i class="fa-solid fa-circle"></i> นัดประชุม</span>';
                         ?>
                         <div class="meeting-card" onclick="toggleCard(this)">
@@ -259,7 +259,7 @@ if ($searchQuery !== '') {
                         $end = date('H:i', strtotime($meeting['end_time']));
                         
                         // Check if it's training
-                        $isTraining = (strpos(mb_strtolower($meeting['title']), 'อบรม') !== false || strpos(mb_strtolower($meeting['description']), 'อบรม') !== false);
+                        $isTraining = (isset($meeting['meeting_type']) && $meeting['meeting_type'] === 'training');
                         $typeBadge = $isTraining ? '<span class="card-time-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success);"><i class="fa-solid fa-graduation-cap"></i> วันฝึกอบรม</span>' : '<span class="card-time-badge" style="background: rgba(99, 102, 241, 0.15); color: var(--primary-light);"><i class="fa-solid fa-circle"></i> นัดประชุม</span>';
                         ?>
                         <div class="meeting-card" onclick="toggleCard(this)">

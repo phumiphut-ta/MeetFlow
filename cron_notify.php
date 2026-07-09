@@ -81,7 +81,8 @@ try {
         
         $attendeeStr = !empty($attendees) ? implode(', ', $attendees) : '-';
         
-        $meetingInfo = "⏰ **เวลา:** $timeStr\n";
+        $typeStr = (isset($m['meeting_type']) && $m['meeting_type'] === 'training') ? 'อบรม' : 'ประชุม';
+        $meetingInfo = "🏷️ **ประเภท:** $typeStr\n⏰ **เวลา:** $timeStr\n";
         
         if (!empty($m['description'])) {
             $meetingInfo .= "📝 **รายละเอียด:** " . $m['description'] . "\n";

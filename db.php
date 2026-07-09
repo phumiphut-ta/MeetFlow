@@ -172,3 +172,19 @@ try {
         exit();
     }
 }
+
+// Auto-migrate schema: Add meeting_type column if it doesn't exist
+try {
+    $pdo->query("SELECT meeting_type FROM meetings LIMIT 1");
+} catch (\Exception $ex) {
+    try {
+        if ($is_sqlite) {
+            $pdo->exec("ALTER TABLE meetings ADD COLUMN meeting_type VARCHAR(50) DEFAULT 'meeting'");
+        } else {
+            $pdo->exec("ALTER TABLE meetings ADD COLUMN `meeting_type` VARCHAR(50) DEFAULT 'meeting' AFTER `description`");
+        }
+    } catch (\Exception $migration_error) {
+        // Ignore if failed
+    }
+}
+

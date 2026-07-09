@@ -156,7 +156,7 @@ try {
                         foreach ($meetingsByDay[$day] as $meeting) {
                             $isAllDay = (substr($meeting['start_time'], 0, 5) === '08:30' && substr($meeting['end_time'], 0, 5) === '16:30');
                             $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : date('H:i', strtotime($meeting['start_time'])) . ' น.';
-                            $isTraining = (strpos(mb_strtolower($meeting['title']), 'อบรม') !== false || strpos(mb_strtolower($meeting['description']), 'อบรม') !== false) ? 'training' : '';
+                            $isTraining = (isset($meeting['meeting_type']) && $meeting['meeting_type'] === 'training') ? 'training' : '';
                             
                             echo '<div class="event-badge ' . $isTraining . '" onclick="viewMeetingDetails(' . $meeting['id'] . ', event)">';
                             echo '<span class="event-time"><i class="fa-regular fa-clock"></i> ' . $timeStr . '</span>';
@@ -200,6 +200,14 @@ try {
             <div class="form-group">
                 <label for="description">รายละเอียดเพิ่มเติม</label>
                 <textarea id="description" name="description" rows="3" placeholder="ระบุเนื้อหาการประชุม ยินดีต้อนรับผู้เข้าร่วม..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="meeting_type">ประเภทการนัดหมาย <span style="color: var(--danger)">*</span></label>
+                <select id="meeting_type" name="meeting_type" required style="width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--border-glass); background: var(--bg-card); color: var(--text-main); font-weight: 500;">
+                    <option value="meeting">ประชุม</option>
+                    <option value="training">อบรม</option>
+                </select>
             </div>
             
             <div class="form-row">
@@ -434,6 +442,7 @@ try {
             }
 
             // Default times
+            document.getElementById('meeting_type').value = "meeting";
             document.getElementById('is_all_day').checked = false;
             toggleAllDay(false);
             document.getElementById('start_time').value = "09:00";
@@ -608,6 +617,7 @@ try {
             document.getElementById('modalTitle').innerText = "แก้ไขข้อมูลการประชุม";
             document.getElementById('title').value = meeting.title;
             document.getElementById('description').value = meeting.description || '';
+            document.getElementById('meeting_type').value = meeting.meeting_type || "meeting";
             document.getElementById('meeting_date').value = meeting.meeting_date;
             const startVal = meeting.start_time.substring(0, 5);
             const endVal = meeting.end_time.substring(0, 5);

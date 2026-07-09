@@ -65,12 +65,19 @@ function notifyDiscord($action, $meeting, $attendees = []) {
             $attendeeText = "• " . $attendeeText;
         }
 
+        $typeStr = (isset($meeting['meeting_type']) && $meeting['meeting_type'] === 'training') ? '🏫 อบรม' : '👥 ประชุม';
+
         // Build Fields
         $fields = [
             [
                 "name" => "หัวข้อ",
                 "value" => "**" . $meeting['title'] . "**",
                 "inline" => false
+            ],
+            [
+                "name" => "ประเภท",
+                "value" => $typeStr,
+                "inline" => true
             ],
             [
                 "name" => "วันเวลา",

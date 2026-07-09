@@ -28,6 +28,7 @@ $end_time = isset($_POST['end_time']) ? trim($_POST['end_time']) : '';
 $doc_no = isset($_POST['doc_no']) ? trim($_POST['doc_no']) : '';
 $office_no = isset($_POST['office_no']) ? trim($_POST['office_no']) : '';
 $meeting_link = isset($_POST['meeting_link']) ? trim($_POST['meeting_link']) : '';
+$meeting_type = isset($_POST['meeting_type']) ? trim($_POST['meeting_type']) : 'meeting';
 
 // Validate required fields
 if (empty($title) || empty($meeting_date) || empty($start_time) || empty($end_time)) {
@@ -120,6 +121,7 @@ try {
         $sql = "UPDATE meetings SET 
                 title = ?, 
                 description = ?, 
+                meeting_type = ?, 
                 meeting_date = ?, 
                 start_time = ?, 
                 end_time = ?, 
@@ -131,7 +133,7 @@ try {
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            $title, $description, $meeting_date, $start_time, $end_time,
+            $title, $description, $meeting_type, $meeting_date, $start_time, $end_time,
             $doc_no, $office_no, $meeting_link, $final_file, $id
         ]);
 
@@ -143,12 +145,12 @@ try {
 
     } else {
         // --- INSERT NEW MEETING ---
-        $sql = "INSERT INTO meetings (title, description, meeting_date, start_time, end_time, doc_no, office_no, meeting_link, doc_file) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO meetings (title, description, meeting_type, meeting_date, start_time, end_time, doc_no, office_no, meeting_link, doc_file) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            $title, $description, $meeting_date, $start_time, $end_time,
+            $title, $description, $meeting_type, $meeting_date, $start_time, $end_time,
             $doc_no, $office_no, $meeting_link, $uploaded_filename
         ]);
 
@@ -170,6 +172,7 @@ try {
     $meetingDetails = [
         'title' => $title,
         'description' => $description,
+        'meeting_type' => $meeting_type,
         'meeting_date' => $meeting_date,
         'start_time' => $start_time,
         'end_time' => $end_time,
