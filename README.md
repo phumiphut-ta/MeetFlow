@@ -24,7 +24,7 @@ meetflow/
 ├── schema.sql             # ไฟล์สคีมาตารางสำหรับ Import ลงฐานข้อมูล MySQL
 ├── index.php              # หน้าแสดงผลปฏิทินรายเดือน และหน้าหลัก
 ├── liff.php               # หน้าจอค้นหาสำหรับ LINE LIFF (Mobile-First)
-├── report.php             # หน้ารายงาน กรองข้อมูล และพิมพ์รายงาน
+├── list.php               # หน้าตารางรายการข้อมูลประชุมและอบรม แบ่งหมวดหมู่วันนี้และอนาคต
 ├── settings.php           # หน้าตั้งค่า Discord Webhook และรหัสผ่าน
 ├── users.php              # หน้าเพิ่ม/ลบบัญชีผู้ดูแลระบบ (Admin)
 ├── notify_discord.php     # สคริปต์ฟังก์ชันสำหรับส่งแจ้งเตือน Discord Webhook

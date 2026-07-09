@@ -87,11 +87,12 @@ try {
             <div class="header-actions">
                 <?php if ($isAdmin): ?>
                     <button class="btn btn-primary" onclick="openAddMeetingModal(null)"><i class="fa-solid fa-plus"></i> บันทึกข้อมูลใหม่</button>
-                    <a href="report.php" class="btn btn-secondary"><i class="fa-solid fa-file-invoice"></i> รายงาน</a>
+                    <a href="list.php" class="btn btn-secondary"><i class="fa-solid fa-list-check"></i> รายการ</a>
                     <a href="users.php" class="btn btn-secondary"><i class="fa-solid fa-users-gear"></i> จัดการผู้ใช้</a>
                     <a href="settings.php" class="btn btn-secondary"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบ</a>
                     <a href="logout.php" class="btn btn-danger" style="background: var(--danger-gradient);"><i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ</a>
                 <?php else: ?>
+                    <a href="list.php" class="btn btn-secondary"><i class="fa-solid fa-list-check"></i> รายการ</a>
                     <a href="liff.php" class="btn btn-secondary"><i class="fa-solid fa-magnifying-glass"></i> ค้นหา</a>
                     <a href="login.php" class="btn btn-primary"><i class="fa-solid fa-arrow-right-to-bracket"></i> เข้าสู่ระบบ (Admin)</a>
                 <?php endif; ?>
@@ -352,6 +353,22 @@ try {
                 document.getElementById('file-label-text').innerText = fileName;
             });
         }
+
+        // Automatically trigger edit modal on load if edit parameter is present (redirected from list.php)
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const editId = urlParams.get('edit');
+            if (editId && isAdmin) {
+                fetch(`get_meeting.php?id=${editId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            openEditMeetingModal(data.meeting);
+                        }
+                    })
+                    .catch(err => console.error('Error fetching edit details:', err));
+            }
+        });
 
         // Copy to clipboard helper with visual micro-feedback
         function copyToClipboard(text, btnElement) {
