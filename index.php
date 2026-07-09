@@ -456,6 +456,14 @@ try {
         function closeMeetingFormDialog() {
             if (isAdmin) {
                 document.getElementById('meetingFormDialog').close();
+                // Redirection check for cancel/close operations
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect');
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                } else if (urlParams.get('edit')) {
+                    window.location.href = 'index.php';
+                }
             }
         }
 
@@ -662,8 +670,14 @@ try {
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    closeMeetingFormDialog();
-                    window.location.reload();
+                    // Redirect back to source page or refresh home page cleanly
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirectUrl = urlParams.get('redirect');
+                    if (redirectUrl) {
+                        window.location.href = redirectUrl;
+                    } else {
+                        window.location.href = 'index.php';
+                    }
                 } else {
                     alert(data.message);
                 }

@@ -522,7 +522,7 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                         <?php if ($isAdmin): ?>
                             <td>
                                 <div class="list-actions">
-                                    <a href="index.php?edit=<?= $m['id'] ?>" class="btn" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(96, 165, 250, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 6px;" title="แก้ไข"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</a>
+                                    <a href="index.php?edit=<?= $m['id'] ?>&redirect=list.php" class="btn" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(96, 165, 250, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 6px;" title="แก้ไข"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</a>
                                     <button type="button" class="btn" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;" onclick="confirmDeleteMeeting(<?= $m['id'] ?>)" title="ลบ"><i class="fa-solid fa-trash"></i> ลบ</button>
                                 </div>
                             </td>
