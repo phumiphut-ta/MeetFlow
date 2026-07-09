@@ -204,7 +204,7 @@ try {
             
             <div class="form-group">
                 <label for="meeting_type">ประเภทการนัดหมาย <span style="color: var(--danger)">*</span></label>
-                <select id="meeting_type" name="meeting_type" required style="width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--border-glass); background: var(--bg-card); color: var(--text-main); font-weight: 500;">
+                <select id="meeting_type" name="meeting_type" required>
                     <option value="meeting">ประชุม</option>
                     <option value="training">อบรม</option>
                 </select>

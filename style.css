@@ -470,6 +470,10 @@ select {
     font-size: 0.95rem;
     transition: var(--transition-smooth);
 }
+select option {
+    background: #0f172a;
+    color: #f1f5f9;
+}
 
 input:focus,
 textarea:focus,
