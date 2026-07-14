@@ -340,6 +340,7 @@ try {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid var(--border-glass); padding-top: 20px;">
             <button type="button" class="btn btn-danger" id="deleteMeetingBtn" style="display: none;"><i class="fa-solid fa-trash"></i> ลบข้อมูล</button>
             <div style="display: flex; gap: 8px; margin-left: auto;">
+                <button type="button" class="btn btn-info" id="shareMeetingBtn" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 6px;"><i class="fa-regular fa-share-nodes"></i> คัดลอกลิงก์ข้อมูล</button>
                 <button type="button" class="btn btn-secondary" onclick="closeMeetingDetailsDialog()">ปิด</button>
                 <button type="button" class="btn btn-primary" id="editMeetingBtn" style="display: none;"><i class="fa-solid fa-edit"></i> แก้ไขข้อมูล</button>
             </div>
@@ -366,6 +367,7 @@ try {
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const editId = urlParams.get('edit');
+            const viewId = urlParams.get('view');
             if (editId && isAdmin) {
                 fetch(`get_meeting.php?id=${editId}`)
                     .then(res => res.json())
@@ -375,6 +377,8 @@ try {
                         }
                     })
                     .catch(err => console.error('Error fetching edit details:', err));
+            } else if (viewId) {
+                viewMeetingDetails(viewId);
             }
         });
 
@@ -584,6 +588,16 @@ try {
                             attendeesList.innerText = '-';
                         }
 
+                        // Configure Share link button
+                        const shareBtn = document.getElementById('shareMeetingBtn');
+                        if (shareBtn) {
+                            shareBtn.onclick = (e) => {
+                                const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+                                const shareUrl = `${window.location.origin}${basePath}/index.php?view=${meeting.id}`;
+                                copyToClipboard(shareUrl, e.currentTarget);
+                            };
+                        }
+
                         // Show/Hide Edit & Delete controls depending on Admin role
                         const delBtn = document.getElementById('deleteMeetingBtn');
                         const editBtn = document.getElementById('editMeetingBtn');
@@ -613,6 +627,12 @@ try {
         // Close details dialog
         function closeMeetingDetailsDialog() {
             document.getElementById('meetingDetailsDialog').close();
+            // Clear URL view parameter if present
+            const url = new URL(window.location);
+            if (url.searchParams.has('view')) {
+                url.searchParams.delete('view');
+                window.history.replaceState({}, '', url.toString());
+            }
         }
 
         // Open edit dialog using loaded details (Only if Admin)

@@ -398,6 +398,24 @@ $thaiMonthsShort = [
             document.getElementById('tab-' + tabId).classList.add('active');
         }
 
+        // Copy shareable meeting details link with micro-feedback
+        function copyShareLink(meetingId, btnElement) {
+            const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            const shareUrl = `${window.location.origin}${basePath}/index.php?view=${meetingId}`;
+            
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const originalHTML = btnElement.innerHTML;
+                btnElement.innerHTML = `<i class="fa-solid fa-check" style="color: var(--success);"></i>`;
+                btnElement.disabled = true;
+                setTimeout(() => {
+                    btnElement.innerHTML = originalHTML;
+                    btnElement.disabled = false;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy share link: ', err);
+            });
+        }
+
         // Admin Confirm meeting deletion (AJAX)
         function confirmDeleteMeeting(meetingId) {
             if (confirm('คุณต้องการลบข้อมูลการนัดประชุมนี้หรือไม่? (ข้อมูลผู้เข้าร่วมและไฟล์แนบจะถูกลบไปด้วย)')) {
@@ -505,7 +523,7 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                             <?php endif; ?>
                         </td>
                         <td>
-                            <div style="display: flex; gap: 8px;">
+                            <div style="display: flex; gap: 8px; align-items: center;">
                                 <?php if ($m['meeting_link']): ?>
                                     <a href="<?= htmlspecialchars($m['meeting_link']) ?>" target="_blank" title="เข้าประชุมออนไลน์" style="color: var(--accent);"><i class="fa-solid fa-video"></i></a>
                                 <?php else: ?>
@@ -517,6 +535,8 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                                 <?php else: ?>
                                     <span style="color: var(--text-muted); opacity: 0.4;"><i class="fa-solid fa-file-excel"></i></span>
                                 <?php endif; ?>
+
+                                <button type="button" class="btn-copy-share" onclick="copyShareLink(<?= $m['id'] ?>, this)" title="คัดลอกลิงก์ข้อมูลนัดหมายเพื่อส่งต่อ" style="background: none; border: none; padding: 0; color: #38bdf8; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-regular fa-share-nodes"></i></button>
                             </div>
                         </td>
                         <?php if ($isAdmin): ?>
