@@ -186,6 +186,8 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
                     <?php else: ?>
                         <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;"><i class="fa-solid fa-file-excel"></i> ไม่มีไฟล์แนบ</button>
                     <?php endif; ?>
+
+                    <button type="button" class="btn btn-secondary" style="grid-column: span 2; background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3);" onclick="event.stopPropagation(); copyShareLink(<?= $meeting['id'] ?>, this)"><i class="fa-solid fa-share-nodes"></i> คัดลอกลิงก์ข้อมูลสำหรับส่งต่อ</button>
                 </div>
             </div>
         </div>
@@ -374,6 +376,24 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
                 }, 2000);
             }).catch(err => {
                 console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Copy shareable meeting details link with micro-feedback
+        function copyShareLink(meetingId, btnElement) {
+            const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            const shareUrl = `${window.location.origin}${basePath}/index.php?view=${meetingId}`;
+            
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const originalHTML = btnElement.innerHTML;
+                btnElement.innerHTML = `<i class="fa-solid fa-check" style="color: var(--success);"></i> คัดลอกแล้ว`;
+                btnElement.disabled = true;
+                setTimeout(() => {
+                    btnElement.innerHTML = originalHTML;
+                    btnElement.disabled = false;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy share link: ', err);
             });
         }
 

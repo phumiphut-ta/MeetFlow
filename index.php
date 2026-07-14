@@ -358,9 +358,9 @@ try {
             </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid var(--border-glass); padding-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; border-top: 1px solid var(--border-glass); padding-top: 20px; flex-wrap: wrap; gap: 10px;">
             <button type="button" class="btn btn-danger" id="deleteMeetingBtn" style="display: none;"><i class="fa-solid fa-trash"></i> ลบข้อมูล</button>
-            <div style="display: flex; gap: 8px; margin-left: auto;">
+            <div style="display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end;">
                 <button type="button" class="btn btn-info" id="shareMeetingBtn" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 6px;"><i class="fa-solid fa-share-nodes"></i> คัดลอกลิงก์ข้อมูล</button>
                 <button type="button" class="btn btn-secondary" onclick="closeMeetingDetailsDialog()">ปิด</button>
                 <button type="button" class="btn btn-primary" id="editMeetingBtn" style="display: none;"><i class="fa-solid fa-edit"></i> แก้ไขข้อมูล</button>
