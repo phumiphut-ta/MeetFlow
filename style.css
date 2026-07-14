@@ -880,3 +880,48 @@ select:focus {
         gap: 4px;
     }
 }
+
+/* Dialog Footer Responsive Actions */
+.dialog-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 25px;
+    border-top: 1px solid var(--border-glass);
+    padding-top: 20px;
+    gap: 8px;
+}
+#deleteMeetingBtn {
+    margin-right: auto;
+}
+
+@media (max-width: 576px) {
+    .dialog-footer-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+    }
+    .dialog-footer-actions .btn {
+        width: 100% !important;
+        justify-content: center !important;
+        margin: 0 !important;
+    }
+    #shareMeetingBtn {
+        grid-column: span 2;
+        order: 1;
+    }
+    #editMeetingBtn {
+        grid-column: span 1;
+        order: 2;
+    }
+    #deleteMeetingBtn {
+        grid-column: span 1;
+        order: 3;
+    }
+    /* close button */
+    .dialog-footer-actions .btn-secondary {
+        grid-column: span 2;
+        order: 4;
+    }
+}
