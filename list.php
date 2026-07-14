@@ -536,7 +536,7 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                                     <span style="color: var(--text-muted); opacity: 0.4;"><i class="fa-solid fa-file-excel"></i></span>
                                 <?php endif; ?>
 
-                                <button type="button" class="btn-copy-share" onclick="copyShareLink(<?= $m['id'] ?>, this)" title="คัดลอกลิงก์ข้อมูลนัดหมายเพื่อส่งต่อ" style="background: none; border: none; padding: 0; color: #38bdf8; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-regular fa-share-nodes"></i></button>
+                                <button type="button" class="btn-copy-share" onclick="copyShareLink(<?= $m['id'] ?>, this)" title="คัดลอกลิงก์ข้อมูลนัดหมายเพื่อส่งต่อ" style="background: none; border: none; padding: 0; color: #38bdf8; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-share-nodes"></i></button>
                             </div>
                         </td>
                         <?php if ($isAdmin): ?>
