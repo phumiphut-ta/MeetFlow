@@ -188,3 +188,58 @@ try {
     }
 }
 
+// Create meeting_types table if it doesn't exist
+try {
+    $pdo->query("SELECT 1 FROM meeting_types LIMIT 1");
+} catch (\Exception $ex) {
+    try {
+        if ($is_sqlite) {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS meeting_types (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    type_key VARCHAR(50) NOT NULL UNIQUE,
+                    type_name VARCHAR(100) NOT NULL,
+                    color VARCHAR(20) DEFAULT '#3b82f6',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+            ");
+        } else {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS meeting_types (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    type_key VARCHAR(50) NOT NULL UNIQUE,
+                    type_name VARCHAR(100) NOT NULL,
+                    color VARCHAR(20) DEFAULT '#3b82f6',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        
+        // Seed default types
+        $pdo->exec("
+            INSERT INTO meeting_types (type_key, type_name, color) VALUES ('meeting', 'ประชุม', '#3b82f6');
+            INSERT INTO meeting_types (type_key, type_name, color) VALUES ('training', 'อบรม', '#10b981');
+        ");
+    } catch (\Exception $migration_error) {
+        // Ignore if failed
+    }
+}
+
+// Utility function to convert Hex to RGBA for glass backgrounds
+if (!function_exists('hexToRgba')) {
+    function hexToRgba($hex, $alpha = 0.2) {
+        $hex = str_replace('#', '', $hex);
+        if (strlen($hex) == 3) {
+            $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1));
+            $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1));
+            $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1));
+        } else {
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+        }
+        return "rgba($r, $g, $b, $alpha)";
+    }
+}
+
+

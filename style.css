@@ -337,23 +337,14 @@ header.app-header {
     text-overflow: ellipsis;
     display: flex;
     flex-direction: column;
-    border-left: 3px solid var(--primary);
-    background: rgba(79, 70, 229, 0.15);
+    border-left: 3px solid var(--type-color, var(--primary));
+    background: var(--type-bg, rgba(79, 70, 229, 0.15));
     color: #cbd5e1;
     transition: var(--transition-smooth);
 }
 .event-badge:hover {
-    background: rgba(79, 70, 229, 0.25);
+    background: var(--type-bg-hover, rgba(79, 70, 229, 0.25));
     color: white;
-}
-
-/* Distinguish training days/meetings if needed */
-.event-badge.training {
-    border-left-color: var(--success);
-    background: rgba(16, 185, 129, 0.15);
-}
-.event-badge.training:hover {
-    background: rgba(16, 185, 129, 0.25);
 }
 
 .event-time {

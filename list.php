@@ -9,9 +9,23 @@ $isAdmin = isset($_SESSION['is_admin']) && $_SESSION['is_admin'] === true;
 
 // Search & Type Filters
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$type = isset($_GET['type']) ? trim($_GET['type']) : 'all'; // all, meeting, training
+$type = isset($_GET['type']) ? trim($_GET['type']) : 'all'; // all, dynamic types
 $startDate = isset($_GET['start_date']) ? trim($_GET['start_date']) : '';
 $endDate = isset($_GET['end_date']) ? trim($_GET['end_date']) : '';
+
+// Fetch all meeting types
+$meetingTypes = [];
+try {
+    $stmtTypes = $pdo->query("SELECT * FROM meeting_types");
+    while ($row = $stmtTypes->fetch()) {
+        $meetingTypes[$row['type_key']] = $row;
+    }
+} catch (\Exception $e) {
+    $meetingTypes = [
+        'meeting' => ['type_key' => 'meeting', 'type_name' => 'ประชุม', 'color' => '#3b82f6'],
+        'training' => ['type_key' => 'training', 'type_name' => 'อบรม', 'color' => '#10b981']
+    ];
+}
 
 // Fetch Meetings matching filters
 $allMeetings = [];
@@ -37,10 +51,9 @@ try {
         $params[] = $endDate;
     }
 
-    if ($type === 'meeting') {
-        $sql .= " AND meeting_type = 'meeting'";
-    } elseif ($type === 'training') {
-        $sql .= " AND meeting_type = 'training'";
+    if ($type !== 'all') {
+        $sql .= " AND meeting_type = ?";
+        $params[] = $type;
     }
 
     $sql .= " ORDER BY meeting_date ASC, start_time ASC";
@@ -153,14 +166,9 @@ $thaiMonthsShort = [
             padding: 4px 8px;
             border-radius: 6px;
             font-weight: 600;
-        }
-        .badge-meeting {
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--primary-light);
-        }
-        .badge-training {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
+            background: var(--type-bg, rgba(99, 102, 241, 0.15));
+            color: var(--type-color, var(--primary-light));
+            border: 1px solid var(--type-border, rgba(99, 102, 241, 0.3));
         }
 
         /* Tabs Styling */
@@ -308,6 +316,10 @@ $thaiMonthsShort = [
             </div>
             <div class="header-actions">
                 <a href="index.php" class="btn btn-secondary"><i class="fa-solid fa-calendar-days"></i> กลับไปหน้าปฏิทิน</a>
+                <?php if ($isAdmin): ?>
+                    <a href="meeting_types.php" class="btn btn-secondary"><i class="fa-solid fa-tags"></i> จัดการประเภท</a>
+                    <a href="users.php" class="btn btn-secondary"><i class="fa-solid fa-users-gear"></i> จัดการผู้ใช้</a>
+                <?php endif; ?>
             </div>
         </header>
 
@@ -331,8 +343,9 @@ $thaiMonthsShort = [
                         <label for="type">ประเภทการนัดหมาย</label>
                         <select id="type" name="type">
                             <option value="all" <?= $type === 'all' ? 'selected' : '' ?>>ทั้งหมด</option>
-                            <option value="meeting" <?= $type === 'meeting' ? 'selected' : '' ?>>เฉพาะนัดประชุม</option>
-                            <option value="training" <?= $type === 'training' ? 'selected' : '' ?>>เฉพาะการอบรม</option>
+                            <?php foreach ($meetingTypes as $t): ?>
+                                <option value="<?= htmlspecialchars($t['type_key']) ?>" <?= $type === $t['type_key'] ? 'selected' : '' ?>>เฉพาะ<?= htmlspecialchars($t['type_name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -448,6 +461,7 @@ $thaiMonthsShort = [
 <?php
 // Helper function to render table for each partition
 function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
+    global $meetingTypes;
     if (count($meetingsList) > 0): ?>
         <table style="min-width: 900px;">
             <thead>
@@ -488,11 +502,14 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                             <span style="font-size: 0.8rem; color: var(--text-secondary);"><?= $timeStr ?></span>
                         </td>
                         <td>
-                            <?php if ($isTraining): ?>
-                                <span class="badge-type badge-training">อบรม</span>
-                            <?php else: ?>
-                                <span class="badge-type badge-meeting">ประชุม</span>
-                            <?php endif; ?>
+                            <?php 
+                            $typeKey = $m['meeting_type'] ?? 'meeting';
+                            $typeName = isset($meetingTypes[$typeKey]) ? $meetingTypes[$typeKey]['type_name'] : 'ประชุม';
+                            $typeColor = isset($meetingTypes[$typeKey]) ? $meetingTypes[$typeKey]['color'] : '#3b82f6';
+                            $rgbaColor = hexToRgba($typeColor, 0.15);
+                            $rgbaColorBorder = hexToRgba($typeColor, 0.3);
+                            ?>
+                            <span class="badge-type" style="--type-bg: <?= $rgbaColor ?>; --type-color: <?= $typeColor ?>; --type-border: <?= $rgbaColorBorder ?>;"><?= htmlspecialchars($typeName) ?></span>
                         </td>
                         <td>
                             <strong><?= htmlspecialchars($m['title']) ?></strong>

@@ -41,6 +41,21 @@ CREATE TABLE IF NOT EXISTS `settings` (
     `setting_value` TEXT DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Meeting Types Table (Dynamic meeting classifications)
+CREATE TABLE IF NOT EXISTS `meeting_types` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `type_key` VARCHAR(50) NOT NULL UNIQUE,
+    `type_name` VARCHAR(100) NOT NULL,
+    `color` VARCHAR(20) DEFAULT '#3b82f6',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Seed default meeting types
+INSERT INTO `meeting_types` (`type_key`, `type_name`, `color`) VALUES
+('meeting', 'ประชุม', '#3b82f6'),
+('training', 'อบรม', '#10b981')
+ON DUPLICATE KEY UPDATE `type_key`=`type_key`;
+
 -- Indexes for search optimization
 CREATE INDEX idx_meetings_date ON meetings(meeting_date);
 CREATE INDEX idx_meetings_doc_no ON meetings(doc_no);

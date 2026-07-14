@@ -13,6 +13,20 @@ $thaiMonths = [
     9 => 'ก.ย.', 10 => 'ต.ค.', 11 => 'พ.ย.', 12 => 'ธ.ค.'
 ];
 
+// Fetch all meeting types
+$meetingTypes = [];
+try {
+    $stmtTypes = $pdo->query("SELECT * FROM meeting_types");
+    while ($row = $stmtTypes->fetch()) {
+        $meetingTypes[$row['type_key']] = $row;
+    }
+} catch (\Exception $e) {
+    $meetingTypes = [
+        'meeting' => ['type_key' => 'meeting', 'type_name' => 'ประชุม', 'color' => '#3b82f6'],
+        'training' => ['type_key' => 'training', 'type_name' => 'อบรม', 'color' => '#10b981']
+    ];
+}
+
 $upcomingResults = [];
 if ($searchQuery !== '') {
     $searched = true;
@@ -91,6 +105,7 @@ foreach ($targetList as $meeting) {
 
 // Helper function to render a group of LIFF meeting cards
 function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
+    global $meetingTypes;
     foreach ($meetingsList as $meeting) {
         // Parse date to Thai format
         $dateParts = explode('-', $meeting['meeting_date']);
@@ -101,9 +116,11 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
         $start = date('H:i', strtotime($meeting['start_time']));
         $end = date('H:i', strtotime($meeting['end_time']));
         
-        // Check if it's training
-        $isTraining = (isset($meeting['meeting_type']) && $meeting['meeting_type'] === 'training');
-        $typeBadge = $isTraining ? '<span class="card-time-badge" style="background: rgba(16, 185, 129, 0.15); color: var(--success);"><i class="fa-solid fa-graduation-cap"></i> วันฝึกอบรม</span>' : '<span class="card-time-badge" style="background: rgba(99, 102, 241, 0.15); color: var(--primary-light);"><i class="fa-solid fa-circle"></i> นัดประชุม</span>';
+        // Dynamic meeting type badge
+        $typeKey = $meeting['meeting_type'] ?? 'meeting';
+        $typeName = isset($meetingTypes[$typeKey]) ? $meetingTypes[$typeKey]['type_name'] : 'นัดประชุม';
+        $typeColor = isset($meetingTypes[$typeKey]) ? $meetingTypes[$typeKey]['color'] : '#3b82f6';
+        $typeBadge = '<span class="card-time-badge" style="background: ' . hexToRgba($typeColor, 0.15) . '; color: ' . $typeColor . ';"><i class="fa-solid fa-circle" style="font-size: 0.55rem; vertical-align: middle; margin-right: 4px;"></i> ' . htmlspecialchars($typeName) . '</span>';
         
         $isAllDay = ($start === '08:30' && $end === '16:30');
         $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : "$start - $end น.";

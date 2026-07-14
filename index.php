@@ -46,6 +46,20 @@ if ($nextMonth > 12) {
     $nextYear++;
 }
 
+// Fetch all meeting types
+$meetingTypes = [];
+try {
+    $stmtTypes = $pdo->query("SELECT * FROM meeting_types");
+    while ($row = $stmtTypes->fetch()) {
+        $meetingTypes[$row['type_key']] = $row;
+    }
+} catch (\Exception $e) {
+    $meetingTypes = [
+        'meeting' => ['type_key' => 'meeting', 'type_name' => 'ประชุม', 'color' => '#3b82f6'],
+        'training' => ['type_key' => 'training', 'type_name' => 'อบรม', 'color' => '#10b981']
+    ];
+}
+
 // Fetch meetings for this month
 try {
     $startDate = sprintf('%04d-%02d-01', $year, $month);
@@ -88,6 +102,7 @@ try {
                 <?php if ($isAdmin): ?>
                     <button class="btn btn-primary" onclick="openAddMeetingModal(null)"><i class="fa-solid fa-plus"></i> บันทึกข้อมูลใหม่</button>
                     <a href="list.php" class="btn btn-secondary"><i class="fa-solid fa-list-check"></i> รายการ</a>
+                    <a href="meeting_types.php" class="btn btn-secondary"><i class="fa-solid fa-tags"></i> จัดการประเภท</a>
                     <a href="users.php" class="btn btn-secondary"><i class="fa-solid fa-users-gear"></i> จัดการผู้ใช้</a>
                     <a href="settings.php" class="btn btn-secondary"><i class="fa-solid fa-gear"></i> ตั้งค่าระบบ</a>
                     <a href="logout.php" class="btn btn-danger" style="background: var(--danger-gradient);"><i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ</a>
@@ -112,8 +127,9 @@ try {
                     </div>
                 </div>
                 <div class="filter-legend">
-                    <span style="margin-right: 15px;"><i class="fa-solid fa-circle" style="color: var(--primary-light); font-size: 0.8rem; margin-right: 5px;"></i> ประชุมทั่วไป</span>
-                    <span><i class="fa-solid fa-circle" style="color: var(--success); font-size: 0.8rem; margin-right: 5px;"></i> วันฝึกอบรม</span>
+                    <?php foreach ($meetingTypes as $t): ?>
+                        <span style="margin-right: 15px;"><i class="fa-solid fa-circle" style="color: <?= htmlspecialchars($t['color']) ?>; font-size: 0.8rem; margin-right: 5px;"></i> <?= htmlspecialchars($t['type_name']) ?></span>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
@@ -156,9 +172,13 @@ try {
                         foreach ($meetingsByDay[$day] as $meeting) {
                             $isAllDay = (substr($meeting['start_time'], 0, 5) === '08:30' && substr($meeting['end_time'], 0, 5) === '16:30');
                             $timeStr = $isAllDay ? 'ตลอดทั้งวัน' : date('H:i', strtotime($meeting['start_time'])) . ' น.';
-                            $isTraining = (isset($meeting['meeting_type']) && $meeting['meeting_type'] === 'training') ? 'training' : '';
                             
-                            echo '<div class="event-badge ' . $isTraining . '" onclick="viewMeetingDetails(' . $meeting['id'] . ', event)">';
+                            $typeKey = $meeting['meeting_type'] ?? 'meeting';
+                            $typeColor = isset($meetingTypes[$typeKey]) ? $meetingTypes[$typeKey]['color'] : '#3b82f6';
+                            $rgbaColor = hexToRgba($typeColor, 0.15);
+                            $rgbaColorHover = hexToRgba($typeColor, 0.25);
+                            
+                            echo '<div class="event-badge" style="--type-color: ' . $typeColor . '; --type-bg: ' . $rgbaColor . '; --type-bg-hover: ' . $rgbaColorHover . ';" onclick="viewMeetingDetails(' . $meeting['id'] . ', event)">';
                             echo '<span class="event-time"><i class="fa-regular fa-clock"></i> ' . $timeStr . '</span>';
                             echo '<span class="event-title">' . htmlspecialchars($meeting['title']) . '</span>';
                             echo '</div>';
@@ -205,8 +225,9 @@ try {
             <div class="form-group">
                 <label for="meeting_type">ประเภทการนัดหมาย <span style="color: var(--danger)">*</span></label>
                 <select id="meeting_type" name="meeting_type" required>
-                    <option value="meeting">ประชุม</option>
-                    <option value="training">อบรม</option>
+                    <?php foreach ($meetingTypes as $t): ?>
+                        <option value="<?= htmlspecialchars($t['type_key']) ?>"><?= htmlspecialchars($t['type_name']) ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             

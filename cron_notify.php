@@ -65,6 +65,17 @@ try {
     $monthName = $thaiMonths[intval($dateParts[1])];
     $thaiDateStr = intval($dateParts[2]) . ' ' . $monthName . ' ' . $thaiYear;
 
+    // Fetch all meeting types for dynamic naming
+    $meetingTypes = [];
+    try {
+        $stmtTypes = $pdo->query("SELECT * FROM meeting_types");
+        while ($row = $stmtTypes->fetch()) {
+            $meetingTypes[$row['type_key']] = $row;
+        }
+    } catch (\Exception $e) {
+        // fallback
+    }
+
     $fields = [];
     $meetingCount = count($meetings);
 
@@ -81,7 +92,8 @@ try {
         
         $attendeeStr = !empty($attendees) ? implode(', ', $attendees) : '-';
         
-        $typeStr = (isset($m['meeting_type']) && $m['meeting_type'] === 'training') ? 'อบรม' : 'ประชุม';
+        $typeKey = $m['meeting_type'] ?? 'meeting';
+        $typeStr = isset($meetingTypes[$typeKey]) ? $meetingTypes[$typeKey]['type_name'] : 'ประชุม';
         $meetingInfo = "🏷️ **ประเภท:** $typeStr\n⏰ **เวลา:** $timeStr\n";
         
         if (!empty($m['description'])) {

@@ -65,7 +65,26 @@ function notifyDiscord($action, $meeting, $attendees = []) {
             $attendeeText = "• " . $attendeeText;
         }
 
-        $typeStr = (isset($meeting['meeting_type']) && $meeting['meeting_type'] === 'training') ? '🏫 อบรม' : '👥 ประชุม';
+        // Fetch all meeting types for dynamic naming
+        $meetingTypes = [];
+        try {
+            $stmtTypes = $pdo->query("SELECT * FROM meeting_types");
+            while ($row = $stmtTypes->fetch()) {
+                $meetingTypes[$row['type_key']] = $row;
+            }
+        } catch (\Exception $e) {
+            // fallback
+        }
+
+        $typeKey = $meeting['meeting_type'] ?? 'meeting';
+        $typeName = isset($meetingTypes[$typeKey]) ? $meetingTypes[$typeKey]['type_name'] : 'ประชุม';
+        if ($typeKey === 'meeting') {
+            $typeStr = '👥 ' . $typeName;
+        } elseif ($typeKey === 'training') {
+            $typeStr = '🏫 ' . $typeName;
+        } else {
+            $typeStr = '🏷️ ' . $typeName;
+        }
 
         // Build Fields
         $fields = [
