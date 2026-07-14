@@ -91,8 +91,67 @@ erDiagram
     meetings }o--|| meeting_types : "classified by (type_key)"
 ```
 
+### 3.1 Data Dictionary (พจนานุกรมข้อมูล)
+
+#### 1) ตาราง `meetings` (ข้อมูลนัดประชุมและวันอบรม)
+เก็บข้อมูลรายละเอียดการนัดประชุม ข้อมูลการเชื่อมโยง เลขที่หนังสือ และไฟล์แนบ
+
+| Column Name | Data Type | Nullable | Key | Default | Description / Explanation |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | NO | PK | Auto-Inc | รหัสประจำรายการการนัดหมาย |
+| `title` | VARCHAR(255) | NO | | | หัวข้อการนัดหมายประชุมหรือวันอบรม |
+| `description` | TEXT | YES | | NULL | รายละเอียดวาระประชุม หรือคำอธิบายเพิ่มเติม |
+| `meeting_type` | VARCHAR(50) | NO | FK | 'meeting' | รหัสประเภทการนัดหมาย (เชื่อมโยงกับ `meeting_types.type_key`) |
+| `meeting_date` | DATE | NO | Index | | วันที่นัดหมายประชุมหรือจัดอบรม (YYYY-MM-DD) |
+| `start_time` | TIME | NO | | | เวลาเริ่มต้น |
+| `end_time` | TIME | NO | | | เวลาสิ้นสุด |
+| `doc_no` | VARCHAR(100) | YES | Index | NULL | เลขที่หนังสืออ้างอิงนำส่ง (เช่น นร 0505/...) |
+| `office_no` | VARCHAR(100) | YES | Index | NULL | เลขรับสำนักงานอ้างอิงข้อมูล |
+| `meeting_link` | VARCHAR(255) | YES | | NULL | ลิงก์ออนไลน์สำหรับการเข้าประชุม (เช่น Teams, Zoom, Webex) |
+| `doc_file` | VARCHAR(255) | YES | | NULL | ชื่อไฟล์เอกสารแนบที่บันทึกไว้ในโฟลเดอร์ `uploads/` |
+| `created_at` | TIMESTAMP | NO | | CURRENT_TIMESTAMP | วันเวลาที่สร้างข้อมูลเข้าระบบ |
+
+#### 2) ตาราง `meeting_types` (ข้อมูลรหัสประเภทการนัดหมายแบบไดนามิก)
+เก็บประเภทหมวดหมู่กิจกรรมและการระบุรหัสสีเพื่อใช้ในการแสดงผล Badge / แถบสี บนหน้าเว็บ
+
+| Column Name | Data Type | Nullable | Key | Default | Description / Explanation |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | NO | PK | Auto-Inc | รหัสประจำรายการประเภท |
+| `type_key` | VARCHAR(50) | NO | UK | | คีย์รหัสกิจกรรมภาษาอังกฤษ (เช่น `meeting`, `training`, `seminar`) |
+| `type_name` | VARCHAR(100) | NO | | | ชื่อประเภทการนัดหมายภาษาไทย (เช่น ประชุม, อบรม, สัมมนา) |
+| `color` | VARCHAR(20) | YES | | '#3b82f6' | รหัสสีแสดงผลแบบ Hex (เช่น `#3b82f6`, `#e11d48`) |
+| `created_at` | TIMESTAMP | NO | | CURRENT_TIMESTAMP | วันเวลาที่เพิ่มประเภทเข้าระบบ |
+
+#### 3) ตาราง `meeting_attendees` (รายชื่อผู้เข้าร่วมการนัดหมาย)
+เก็บรายชื่อผู้เข้าร่วมในแต่ละการประชุม (มีความสัมพันธ์แบบ One-to-Many กับ `meetings`)
+
+| Column Name | Data Type | Nullable | Key | Default | Description / Explanation |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | NO | PK | Auto-Inc | รหัสประจำรายการรายชื่อ |
+| `meeting_id` | INT | NO | FK | | รหัสรายการนัดหมายที่เชื่อมโยง (มีข้อจำกัด `ON DELETE CASCADE`) |
+| `attendee_name` | VARCHAR(100) | NO | | | ชื่อ-นามสกุล หรือตำแหน่งของผู้เข้าร่วมประชุม |
+| `created_at` | TIMESTAMP | NO | | CURRENT_TIMESTAMP | วันเวลาที่บันทึกรายชื่อ |
+
+#### 4) ตาราง `settings` (การตั้งค่าคอนฟิกระบบ)
+เก็บค่ากำหนดต่างๆ เช่น Discord Webhook และช่วงเวลาแจ้งเตือนรายวัน
+
+| Column Name | Data Type | Nullable | Key | Default | Description / Explanation |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `setting_key` | VARCHAR(100) | NO | PK | | รหัสคีย์การตั้งค่า (เช่น `discord_webhook`, `notify_daily`) |
+| `setting_value` | TEXT | YES | | NULL | ค่าคอนฟิกตามคีย์ที่กำหนด |
+
+#### 5) ตาราง `users` (ข้อมูลผู้ดูแลระบบ - Admin)
+เก็บสิทธิ์ของแอดมินสำหรับจัดการข้อมูลนัดหมายและประเภทกิจกรรม
+
+| Column Name | Data Type | Nullable | Key | Default | Description / Explanation |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `id` | INT | NO | PK | Auto-Inc | รหัสผู้ใช้ |
+| `username` | VARCHAR(50) | NO | UK | | ชื่อผู้เข้าใช้งานระบบ (ต้องไม่ซ้ำกัน) |
+| `password` | VARCHAR(255) | NO | | | รหัสผ่านผู้ใช้งาน (เข้ารหัสความปลอดภัยด้วย Bcrypt เสมอ) |
+| `created_at` | TIMESTAMP | NO | | CURRENT_TIMESTAMP | วันเวลาที่สร้างบัญชีผู้ใช้ |
+
 - **Indexes**: Added on `meetings(meeting_date)` for fast calendar monthly query, and composite index on `meetings(doc_no, office_no)` to accelerate search speeds within LINE LIFF queries.
-- **Meeting Type Classification**: Added `meeting_type` VARCHAR(50) (default `'meeting'`) to distinguish general meetings (`'meeting'`) from training courses (`'training'`) without parsing title/description keywords.
+- **Meeting Type Classification**: Associated `meeting_type` VARCHAR(50) (default `'meeting'`) to reference records in the `meeting_types` table.
 - **All-day Events Convention**: All-day meetings (ตลอดทั้งวัน) are stored in the database with `start_time = '08:30:00'` and `end_time = '16:30:00'`. The frontend layouts (calendar cells, details modal, LINE LIFF cards, and PDF reports) identify this pattern and display the text `"ตลอดทั้งวัน"` in place of the time range.
 
 ---
