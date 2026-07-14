@@ -38,6 +38,7 @@ MeetFlow is a monthly calendar application for scheduling meetings and training 
 | `delete_meeting.php` | **Meeting Deletion Endpoint**: Triggers database record deletion. |
 | `get_meeting.php` | **Details API**: Endpoint returning JSON representations of a specific meeting for editing. |
 | `migrate.php` | **Database Migration Helper**: Troubleshooting script to verify or alter MySQL/SQLite tables if columns are missing. Outputs raw SQL fallback suggestions if IIS/MySQL lacks ALTER permissions. |
+| `meeting_types.php` | **Meeting Types Administration**: UI for creating new meeting types (with a custom label and HTML color picker), editing display names/colors, and deleting custom categories. |
 | `uploads/` | **Uploaded Documents folder**: Storage for PDF/doc attachments. |
 | `uploads/.htaccess` | **Apache Security**: Disables PHP/script execution within the uploads folder to prevent Remote Code Execution (RCE). |
 | `uploads/web.config` | **IIS Security**: Disables execution of script extensions (.php, .asp, etc.) via safe request filtering. |
@@ -53,7 +54,7 @@ erDiagram
         int id PK
         string title
         text description
-        string meeting_type
+        string meeting_type FK
         date meeting_date
         time start_time
         time end_time
@@ -61,6 +62,13 @@ erDiagram
         string office_no
         string meeting_link
         string doc_file
+        datetime created_at
+    }
+    meeting_types {
+        int id PK
+        string type_key UK
+        string type_name
+        string color
         datetime created_at
     }
     meeting_attendees {
@@ -80,6 +88,7 @@ erDiagram
     }
 
     meetings ||--o{ meeting_attendees : "has (ON DELETE CASCADE)"
+    meetings }o--|| meeting_types : "classified by (type_key)"
 ```
 
 - **Indexes**: Added on `meetings(meeting_date)` for fast calendar monthly query, and composite index on `meetings(doc_no, office_no)` to accelerate search speeds within LINE LIFF queries.
