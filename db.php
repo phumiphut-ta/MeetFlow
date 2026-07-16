@@ -7,6 +7,17 @@ $user = 'root';
 $pass = ''; // Default password, change as needed for Windows Server IIS/MySQL
 $charset = 'utf8mb4';
 
+// Load credentials dynamically from config.php if it exists
+$configPath = __DIR__ . '/config.php';
+if (file_exists($configPath)) {
+    $config = require $configPath;
+    $host = $config['host'] ?? $host;
+    $db   = $config['db'] ?? $db;
+    $user = $config['user'] ?? $user;
+    $pass = $config['pass'] ?? $pass;
+    $charset = $config['charset'] ?? $charset;
+}
+
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

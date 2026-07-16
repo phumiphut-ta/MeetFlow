@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Admin Note Feature**: Added an internal `admin_note` field in the meetings table with admin-only textareas, selective rendering, and API security filtering to avoid data leakage for guests.
 - **Multi-day Events Feature**: Spans calendar cell events across multiple days using overlapping range checks. Upgraded lists dashboard and LINE LIFF card groups to recognize and group active date ranges.
 - **Related Link Rebranding**: Rebranded online meeting links to "Related Link" (ลิงก์ที่เกี่ยวข้อง) with generic chain link icons (`fa-link`) to accommodate registration forms and document sharing links.
+- **Credentials Separation**: Separated database connection configuration into an external `config.php` file (git-ignored for security) and provided `config.example.php` template to prevent accidental credential leakage.
 
 ---
 

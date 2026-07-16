@@ -1,6 +1,9 @@
 # Ignore local SQLite database containing mock test data
 meetflow.sqlite
 
+# Ignore database configuration file containing credentials
+config.php
+
 # Ignore OS-specific files
 .DS_Store
 Thumbs.db

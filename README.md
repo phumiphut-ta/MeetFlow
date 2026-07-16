@@ -52,13 +52,17 @@ meetflow/
 3. ทำการนำเข้า (Import) ไฟล์ SQL จากตัวโปรเจกต์: **[schema.sql](file:///Users/phumiphut/.gemini/antigravity-ide/scratch/meetflow/schema.sql)** เข้าสู่ระบบฐานข้อมูล
 
 ### 2. กำหนดค่าการเชื่อมต่อฐานข้อมูล
-เปิดไฟล์ **[db.php](file:///Users/phumiphut/.gemini/antigravity-ide/scratch/meetflow/db.php)** และแก้ไขค่าตัวแปรด้านบนให้ตรงกับบัญชีผู้ใช้ MySQL Server บนเซิร์ฟเวอร์ของคุณ:
-```php
-$host = '127.0.0.1';    // ที่อยู่ของ MySQL Server
-$db   = 'meetflow';     // ชื่อฐานข้อมูล
-$user = 'root';         // ชื่อผู้ใช้งาน MySQL
-$pass = 'your_password'; // รหัสผ่าน MySQL
-```
+1. คัดลอกไฟล์ตัวอย่าง **[config.example.php](file:///Users/phumiphut/.gemini/antigravity-ide/scratch/meetflow/config.example.php)** แล้วเปลี่ยนชื่อไฟล์เป็น `config.php`
+2. เปิดไฟล์ `config.php` และแก้ไขข้อมูลการเชื่อมต่อฐานข้อมูลให้ตรงกับบัญชีผู้ใช้ MySQL Server บนเซิร์ฟเวอร์ของคุณ:
+   ```php
+   return [
+       'host' => '127.0.0.1',     // ที่อยู่ของ MySQL Server
+       'db'   => 'meetflow',      // ชื่อฐานข้อมูล
+       'user' => 'root',          // ชื่อผู้ใช้งาน MySQL
+       'pass' => 'your_password', // รหัสผ่าน MySQL
+   ];
+   ```
+*(หมายเหตุ: ไฟล์ `config.php` จะถูกละเว้นโดยอัตโนมัติใน `.gitignore` เพื่อความปลอดภัย ป้องกันไม่ให้ข้อมูลรหัสผ่านเซิร์ฟเวอร์จริงรั่วไหลขึ้นสู่ระบบ Git)*
 
 ### 3. ตั้งค่าสิทธิ์โฟลเดอร์สำหรับอัปโหลดไฟล์ (IIS เขียนไฟล์)
 ในระบบ Windows Server IIS เพื่อให้ PHP สามารถอัปโหลดและลบไฟล์เอกสารแนบในโฟลเดอร์ `uploads/` ได้ ต้องทำการอนุญาตสิทธิ์เขียนไฟล์ให้กับกลุ่มผู้ใช้ว็บไซต์:
