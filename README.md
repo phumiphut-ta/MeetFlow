@@ -27,9 +27,11 @@ meetflow/
 ├── list.php               # หน้าตารางรายการข้อมูลประชุมและอบรม แบ่งหมวดหมู่วันนี้และอนาคต
 ├── settings.php           # หน้าตั้งค่า Discord Webhook และรหัสผ่าน
 ├── users.php              # หน้าเพิ่ม/ลบบัญชีผู้ดูแลระบบ (Admin)
+├── meeting_types.php      # หน้าควบคุมจัดการประเภทนัดหมายและรหัสสี (Admin)
 ├── notify_discord.php     # สคริปต์ฟังก์ชันสำหรับส่งแจ้งเตือน Discord Webhook
 ├── cron_notify.php        # สคริปต์ตรวจสอบแจ้งเตือนสรุปรายวันอัตโนมัติ
 ├── login.php / logout.php # ระบบจัดการสิทธิ์และความปลอดภัยผู้ใช้งาน
+├── CHANGELOG.md           # ไฟล์บันทึกประวัติการพัฒนาและเวอร์ชันอัปเดตระบบ
 ├── save_meeting.php       # API บันทึกและอัปโหลดไฟล์
 ├── delete_meeting.php     # API ลบข้อมูล
 ├── get_meeting.php        # API เรียกดูข้อมูลการนัด

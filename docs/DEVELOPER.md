@@ -153,6 +153,7 @@ erDiagram
 - **Indexes**: Added on `meetings(meeting_date)` for fast calendar monthly query, and composite index on `meetings(doc_no, office_no)` to accelerate search speeds within LINE LIFF queries.
 - **Meeting Type Classification**: Associated `meeting_type` VARCHAR(50) (default `'meeting'`) to reference records in the `meeting_types` table.
 - **All-day Events Convention**: All-day meetings (ตลอดทั้งวัน) are stored in the database with `start_time = '08:30:00'` and `end_time = '16:30:00'`. The frontend layouts (calendar cells, details modal, LINE LIFF cards, and PDF reports) identify this pattern and display the text `"ตลอดทั้งวัน"` in place of the time range.
+- **Shareable Link Formatting**: When copying the shareable URL of a meeting, the system formats the copied text by prepending the **Meeting Title** followed by a newline character (`\n`) and then the URL (e.g. `[ชื่อเรื่อง]\n[ลิงก์]`). This logic is executed using JavaScript inside `index.php`, `list.php`, and `liff.php` to optimize messaging sharing on platforms like LINE or Discord.
 
 ---
 
