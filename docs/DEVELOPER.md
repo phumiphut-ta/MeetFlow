@@ -56,12 +56,14 @@ erDiagram
         text description
         string meeting_type FK
         date meeting_date
+        date end_date
         time start_time
         time end_time
         string doc_no
         string office_no
         string meeting_link
         string doc_file
+        text admin_note
         datetime created_at
     }
     meeting_types {
@@ -102,13 +104,15 @@ erDiagram
 | `title` | VARCHAR(255) | NO | | | หัวข้อการนัดหมายประชุมหรือวันอบรม |
 | `description` | TEXT | YES | | NULL | รายละเอียดวาระประชุม หรือคำอธิบายเพิ่มเติม |
 | `meeting_type` | VARCHAR(50) | NO | FK | 'meeting' | รหัสประเภทการนัดหมาย (เชื่อมโยงกับ `meeting_types.type_key`) |
-| `meeting_date` | DATE | NO | Index | | วันที่นัดหมายประชุมหรือจัดอบรม (YYYY-MM-DD) |
+| `meeting_date` | DATE | NO | Index | | วันที่เริ่มต้นนัดหมายประชุมหรือจัดอบรม (YYYY-MM-DD) |
+| `end_date` | DATE | YES | | NULL | วันที่สิ้นสุดนัดหมาย สำหรับกรณีจัดกิจกรรมหลายวัน (หากเป็นวันเดียวจะมีค่าเท่ากับ meeting_date) |
 | `start_time` | TIME | NO | | | เวลาเริ่มต้น |
 | `end_time` | TIME | NO | | | เวลาสิ้นสุด |
 | `doc_no` | VARCHAR(100) | YES | Index | NULL | เลขที่หนังสืออ้างอิงนำส่ง (เช่น นร 0505/...) |
 | `office_no` | VARCHAR(100) | YES | Index | NULL | เลขรับสำนักงานอ้างอิงข้อมูล |
-| `meeting_link` | VARCHAR(255) | YES | | NULL | ลิงก์ออนไลน์สำหรับการเข้าประชุม (เช่น Teams, Zoom, Webex) |
+| `meeting_link` | VARCHAR(255) | YES | | NULL | ลิงก์ที่เกี่ยวข้องเพื่อเชื่อมโยง เช่น ลิงก์เข้าประชุม ลงทะเบียน หรือเอกสารประกอบการประชุมเพิ่มเติม |
 | `doc_file` | VARCHAR(255) | YES | | NULL | ชื่อไฟล์เอกสารแนบที่บันทึกไว้ในโฟลเดอร์ `uploads/` |
+| `admin_note` | TEXT | YES | | NULL | บันทึกส่วนตัวหรือหมายเหตุภายในเฉพาะผู้ดูแลระบบ (ความปลอดภัย: ข้อมูลส่วนนี้จะถูกกรองออกทันทีหากเรียกผ่าน API โดยไม่ล็อกอินแอดมิน) |
 | `created_at` | TIMESTAMP | NO | | CURRENT_TIMESTAMP | วันเวลาที่สร้างข้อมูลเข้าระบบ |
 
 #### 2) ตาราง `meeting_types` (ข้อมูลรหัสประเภทการนัดหมายแบบไดนามิก)
@@ -154,6 +158,9 @@ erDiagram
 - **Meeting Type Classification**: Associated `meeting_type` VARCHAR(50) (default `'meeting'`) to reference records in the `meeting_types` table.
 - **All-day Events Convention**: All-day meetings (ตลอดทั้งวัน) are stored in the database with `start_time = '08:30:00'` and `end_time = '16:30:00'`. The frontend layouts (calendar cells, details modal, LINE LIFF cards, and PDF reports) identify this pattern and display the text `"ตลอดทั้งวัน"` in place of the time range.
 - **Shareable Link Formatting**: When copying the shareable URL of a meeting, the system formats the copied text by prepending the **Meeting Title** followed by a newline character (`\n`) and then the URL (e.g. `[ชื่อเรื่อง]\n[ลิงก์]`). This logic is executed using JavaScript inside `index.php`, `list.php`, and `liff.php` to optimize messaging sharing on platforms like LINE or Discord.
+- **Multi-day Events support**: Spans calendar cells dynamically by checking overlap of range between `meeting_date` and `end_date`. The system formats the date range as `[Start Date] ถึง [End Date]` for display.
+- **Admin Note Security**: The column `admin_note` is securely stripped/unset in `get_meeting.php` if the requester is not authenticated as an admin, avoiding any data leak to the frontend for guests.
+- **Related Link Rebranding**: Links are generalized beyond meeting rooms using a link chain icon (`fa-link`) and named "Related Link" (ลิงก์ที่เกี่ยวข้อง) to accommodate forms, registration pages, and document URLs.
 
 ---
 
