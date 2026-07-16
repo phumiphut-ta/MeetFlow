@@ -187,7 +187,7 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
                         <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;"><i class="fa-solid fa-file-excel"></i> ไม่มีไฟล์แนบ</button>
                     <?php endif; ?>
 
-                    <button type="button" class="btn btn-secondary" style="grid-column: span 2; background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3);" onclick="event.stopPropagation(); copyShareLink(<?= $meeting['id'] ?>, this)"><i class="fa-solid fa-share-nodes"></i> คัดลอกลิงก์ข้อมูลสำหรับส่งต่อ</button>
+                    <button type="button" class="btn btn-secondary" style="grid-column: span 2; background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3);" onclick="event.stopPropagation(); copyShareLink(<?= $meeting['id'] ?>, this, '<?= htmlspecialchars(str_replace("'", "\\'", $meeting['title']), ENT_QUOTES, 'UTF-8') ?>')"><i class="fa-solid fa-share-nodes"></i> คัดลอกลิงก์ข้อมูลสำหรับส่งต่อ</button>
                 </div>
             </div>
         </div>
@@ -380,11 +380,12 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
         }
 
         // Copy shareable meeting details link with micro-feedback
-        function copyShareLink(meetingId, btnElement) {
+        function copyShareLink(meetingId, btnElement, meetingTitle) {
             const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
             const shareUrl = `${window.location.origin}${basePath}/index.php?view=${meetingId}`;
+            const copyText = meetingTitle ? `${meetingTitle}\n${shareUrl}` : shareUrl;
             
-            navigator.clipboard.writeText(shareUrl).then(() => {
+            navigator.clipboard.writeText(copyText).then(() => {
                 const originalHTML = btnElement.innerHTML;
                 btnElement.innerHTML = `<i class="fa-solid fa-check" style="color: var(--success);"></i> คัดลอกแล้ว`;
                 btnElement.disabled = true;

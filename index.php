@@ -612,7 +612,8 @@ try {
                             shareBtn.onclick = (e) => {
                                 const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
                                 const shareUrl = `${window.location.origin}${basePath}/index.php?view=${meeting.id}`;
-                                copyToClipboard(shareUrl, e.currentTarget);
+                                const copyText = `${meeting.title}\n${shareUrl}`;
+                                copyToClipboard(copyText, e.currentTarget);
                             };
                         }
 

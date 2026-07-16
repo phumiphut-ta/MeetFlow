@@ -412,11 +412,12 @@ $thaiMonthsShort = [
         }
 
         // Copy shareable meeting details link with micro-feedback
-        function copyShareLink(meetingId, btnElement) {
+        function copyShareLink(meetingId, btnElement, meetingTitle) {
             const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
             const shareUrl = `${window.location.origin}${basePath}/index.php?view=${meetingId}`;
+            const copyText = meetingTitle ? `${meetingTitle}\n${shareUrl}` : shareUrl;
             
-            navigator.clipboard.writeText(shareUrl).then(() => {
+            navigator.clipboard.writeText(copyText).then(() => {
                 const originalHTML = btnElement.innerHTML;
                 btnElement.innerHTML = `<i class="fa-solid fa-check" style="color: var(--success);"></i>`;
                 btnElement.disabled = true;
@@ -553,7 +554,7 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                                     <span style="color: var(--text-muted); opacity: 0.4;"><i class="fa-solid fa-file-excel"></i></span>
                                 <?php endif; ?>
 
-                                <button type="button" class="btn-copy-share" onclick="copyShareLink(<?= $m['id'] ?>, this)" title="คัดลอกลิงก์ข้อมูลนัดหมายเพื่อส่งต่อ" style="background: none; border: none; padding: 0; color: #38bdf8; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-share-nodes"></i></button>
+                                <button type="button" class="btn-copy-share" onclick="copyShareLink(<?= $m['id'] ?>, this, '<?= htmlspecialchars(str_replace("'", "\\'", $m['title']), ENT_QUOTES, 'UTF-8') ?>')" title="คัดลอกลิงก์ข้อมูลนัดหมายเพื่อส่งต่อ" style="background: none; border: none; padding: 0; color: #38bdf8; cursor: pointer; font-size: 0.95rem; display: inline-flex; align-items: center; justify-content: center;"><i class="fa-solid fa-share-nodes"></i></button>
                             </div>
                         </td>
                         <?php if ($isAdmin): ?>
