@@ -103,7 +103,7 @@ try {
             $meetingInfo .= "📄 **เลขที่หนังสือ:** " . $m['doc_no'] . "\n";
         }
         if (!empty($m['meeting_link'])) {
-            $meetingInfo .= "🔗 **ลิงก์ประชุม:** [คลิกเข้าประชุมที่นี่](" . $m['meeting_link'] . ")\n";
+            $meetingInfo .= "🔗 **ลิงก์ที่เกี่ยวข้อง:** [คลิกเปิดลิงก์ที่นี่](" . $m['meeting_link'] . ")\n";
         }
         $meetingInfo .= "👥 **ผู้เข้าร่วม:** $attendeeStr";
         

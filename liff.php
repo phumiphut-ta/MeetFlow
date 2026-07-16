@@ -176,9 +176,9 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
 
                 <?php if ($meeting['meeting_link']): ?>
                 <div style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px;">
-                    <strong>ลิงก์ประชุมออนไลน์:</strong>
+                    <strong>ลิงก์ที่เกี่ยวข้อง:</strong>
                     <div style="display: flex; align-items: center; gap: 8px; background: rgba(15, 23, 42, 0.4); padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border-glass);">
-                        <a href="<?= htmlspecialchars($meeting['meeting_link']) ?>" target="_blank" class="link" style="font-size: 0.85rem; word-break: break-all; text-decoration: underline; flex-grow: 1; color: var(--accent);"><i class="fa-solid fa-video"></i> <?= htmlspecialchars($meeting['meeting_link']) ?></a>
+                        <a href="<?= htmlspecialchars($meeting['meeting_link']) ?>" target="_blank" class="link" style="font-size: 0.85rem; word-break: break-all; text-decoration: underline; flex-grow: 1; color: var(--accent);"><i class="fa-solid fa-link"></i> <?= htmlspecialchars($meeting['meeting_link']) ?></a>
                         <button type="button" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0;" onclick="event.stopPropagation(); copyToClipboard('<?= htmlspecialchars(str_replace("'", "\\'", $meeting['meeting_link'])) ?>', this)"><i class="fa-regular fa-copy"></i> คัดลอก</button>
                     </div>
                 </div>
@@ -186,9 +186,9 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
 
                 <div class="card-actions">
                     <?php if ($meeting['meeting_link']): ?>
-                        <a href="<?= htmlspecialchars($meeting['meeting_link']) ?>" target="_blank" class="btn btn-primary" onclick="event.stopPropagation();"><i class="fa-solid fa-video"></i> เข้าประชุมออนไลน์</a>
+                        <a href="<?= htmlspecialchars($meeting['meeting_link']) ?>" target="_blank" class="btn btn-primary" onclick="event.stopPropagation();"><i class="fa-solid fa-up-right-from-square"></i> เปิดลิงก์ที่เกี่ยวข้อง</a>
                     <?php else: ?>
-                        <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;"><i class="fa-solid fa-video-slash"></i> ไม่มีลิงก์</button>
+                        <button class="btn btn-secondary" disabled style="opacity: 0.5; cursor: not-allowed;"><i class="fa-solid fa-link-slash"></i> ไม่มีลิงก์</button>
                     <?php endif; ?>
 
                     <?php if ($meeting['doc_file']): ?>

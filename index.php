@@ -286,8 +286,8 @@ try {
             </div>
 
             <div class="form-group">
-                <label for="meeting_link">ลิงก์ประชุมออนไลน์ (MS Teams, Zoom, Google Meet)</label>
-                <input type="url" id="meeting_link" name="meeting_link" placeholder="https://teams.microsoft.com/...">
+                <label for="meeting_link">ลิงก์ที่เกี่ยวข้อง (เช่น ลิงก์ประชุม, ลงทะเบียน, หรือเอกสารเพิ่มเติม)</label>
+                <input type="url" id="meeting_link" name="meeting_link" placeholder="เช่น https://zoom.us/... หรือ https://forms.gle/...">
             </div>
 
             <div class="form-group" style="background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.15); border-radius: 8px; padding: 12px;">
@@ -363,7 +363,7 @@ try {
             </div>
 
             <div class="detail-row">
-                <div class="detail-label">ประชุมออนไลน์</div>
+                <div class="detail-label">ลิงก์ที่เกี่ยวข้อง</div>
                 <div class="detail-value" id="view_meeting_link_container">-</div>
             </div>
 
@@ -619,7 +619,7 @@ try {
                         if (meeting.meeting_link) {
                             linkContainer.innerHTML = `
                                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; width: 100%;">
-                                    <a href="${meeting.meeting_link}" target="_blank" class="detail-value link" style="word-break: break-all; max-width: calc(100% - 100px); text-decoration: underline;"><i class="fa-solid fa-video"></i> ${meeting.meeting_link}</a>
+                                    <a href="${meeting.meeting_link}" target="_blank" class="detail-value link" style="word-break: break-all; max-width: calc(100% - 100px); text-decoration: underline;"><i class="fa-solid fa-link"></i> ${meeting.meeting_link}</a>
                                     <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; margin-left: auto;" onclick="copyToClipboard('${meeting.meeting_link.replace(/'/g, "\\'")}', this)"><i class="fa-regular fa-copy"></i> คัดลอก</button>
                                 </div>
                             `;

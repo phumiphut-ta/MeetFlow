@@ -150,8 +150,8 @@ function notifyDiscord($action, $meeting, $attendees = []) {
         // Meeting Links
         if (!empty($meeting['meeting_link'])) {
             $fields[] = [
-                "name" => "ลิงก์เข้าร่วมประชุมออนไลน์",
-                "value" => "[คลิกเพื่อเข้าประชุมที่นี่](" . $meeting['meeting_link'] . ")",
+                "name" => "🔗 ลิงก์ที่เกี่ยวข้อง",
+                "value" => "[คลิกเพื่อเปิดลิงก์ที่นี่](" . $meeting['meeting_link'] . ")",
                 "inline" => false
             ];
         }
