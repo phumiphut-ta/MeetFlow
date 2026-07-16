@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `meetings` (
     `office_no` VARCHAR(100) DEFAULT NULL,
     `meeting_link` VARCHAR(1000) DEFAULT NULL,
     `doc_file` VARCHAR(255) DEFAULT NULL,
+    `admin_note` TEXT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

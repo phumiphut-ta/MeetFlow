@@ -273,6 +273,11 @@ try {
                 <input type="url" id="meeting_link" name="meeting_link" placeholder="https://teams.microsoft.com/...">
             </div>
 
+            <div class="form-group" style="background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.15); border-radius: 8px; padding: 12px;">
+                <label for="admin_note" style="color: #fda4af;"><i class="fa-solid fa-user-shield"></i> บันทึกเฉพาะแอดมิน (Admin Note - ผู้ใช้ทั่วไปจะไม่เห็นข้อมูลนี้)</label>
+                <textarea id="admin_note" name="admin_note" rows="3" placeholder="ระบุข้อมูลที่เห็นเฉพาะแอดมิน เช่น กำหนดจัดส่งรายชื่อ หรือสถานะงานปัจจุบัน..."></textarea>
+            </div>
+
             <!-- Upload File -->
             <div class="form-group">
                 <label>แนบไฟล์หนังสือ (ไฟล์ PDF, Word, Excel, รูปภาพ)</label>
@@ -349,6 +354,13 @@ try {
                 <div class="detail-label">เอกสารแนบ</div>
                 <div class="detail-value" id="view_file_container">-</div>
             </div>
+
+            <?php if ($isAdmin): ?>
+            <div class="detail-row" id="view_admin_note_row" style="background: rgba(244, 63, 94, 0.05); border-left: 3px solid #f43f5e; border-top: none; border-bottom: none; padding-left: 10px; margin-top: 10px; margin-bottom: 10px;">
+                <div class="detail-label" style="color: #f43f5e;"><i class="fa-solid fa-user-shield"></i> บันทึกเฉพาะแอดมิน (Admin Note)</div>
+                <div class="detail-value" id="view_admin_note" style="color: #fda4af; white-space: pre-line;">-</div>
+            </div>
+            <?php endif; ?>
 
             <div class="detail-row" style="border-bottom: none;">
                 <div class="detail-label">ผู้เข้าร่วมประชุม</div>
@@ -606,6 +618,13 @@ try {
                             attendeesList.innerText = '-';
                         }
 
+                        if (isAdmin) {
+                            const adminNoteEl = document.getElementById('view_admin_note');
+                            if (adminNoteEl) {
+                                adminNoteEl.innerText = meeting.admin_note || 'ไม่มีบันทึก';
+                            }
+                        }
+
                         // Configure Share link button
                         const shareBtn = document.getElementById('shareMeetingBtn');
                         if (shareBtn) {
@@ -676,6 +695,7 @@ try {
             document.getElementById('doc_no').value = meeting.doc_no || '';
             document.getElementById('office_no').value = meeting.office_no || '';
             document.getElementById('meeting_link').value = meeting.meeting_link || '';
+            document.getElementById('admin_note').value = meeting.admin_note || '';
             
             // Set uploaded file display
             document.getElementById('file-label-text').innerText = "คลิกเพื่อเปลี่ยนไฟล์แนบ";

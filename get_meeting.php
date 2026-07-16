@@ -29,6 +29,12 @@ try {
 
     $meeting['attendees'] = $attendees;
 
+    // Security check: only expose admin_note to logged-in admin users
+    session_start();
+    if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
+        unset($meeting['admin_note']);
+    }
+
     echo json_encode([
         'success' => true,
         'meeting' => $meeting

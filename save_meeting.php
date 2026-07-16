@@ -29,6 +29,7 @@ $doc_no = isset($_POST['doc_no']) ? trim($_POST['doc_no']) : '';
 $office_no = isset($_POST['office_no']) ? trim($_POST['office_no']) : '';
 $meeting_link = isset($_POST['meeting_link']) ? trim($_POST['meeting_link']) : '';
 $meeting_type = isset($_POST['meeting_type']) ? trim($_POST['meeting_type']) : 'meeting';
+$admin_note = isset($_POST['admin_note']) && trim($_POST['admin_note']) !== '' ? trim($_POST['admin_note']) : null;
 
 // Validate required fields
 if (empty($title) || empty($meeting_date) || empty($start_time) || empty($end_time)) {
@@ -128,13 +129,14 @@ try {
                 doc_no = ?, 
                 office_no = ?, 
                 meeting_link = ?, 
-                doc_file = ? 
+                doc_file = ?,
+                admin_note = ? 
                 WHERE id = ?";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             $title, $description, $meeting_type, $meeting_date, $start_time, $end_time,
-            $doc_no, $office_no, $meeting_link, $final_file, $id
+            $doc_no, $office_no, $meeting_link, $final_file, $admin_note, $id
         ]);
 
         $meeting_id = $id;
@@ -145,13 +147,13 @@ try {
 
     } else {
         // --- INSERT NEW MEETING ---
-        $sql = "INSERT INTO meetings (title, description, meeting_type, meeting_date, start_time, end_time, doc_no, office_no, meeting_link, doc_file) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO meetings (title, description, meeting_type, meeting_date, start_time, end_time, doc_no, office_no, meeting_link, doc_file, admin_note) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             $title, $description, $meeting_type, $meeting_date, $start_time, $end_time,
-            $doc_no, $office_no, $meeting_link, $uploaded_filename
+            $doc_no, $office_no, $meeting_link, $uploaded_filename, $admin_note
         ]);
 
         $meeting_id = $pdo->lastInsertId();

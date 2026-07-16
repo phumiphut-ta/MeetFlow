@@ -49,6 +49,7 @@ try {
                     office_no VARCHAR(100) DEFAULT NULL,
                     meeting_link VARCHAR(1000) DEFAULT NULL,
                     doc_file VARCHAR(255) DEFAULT NULL,
+                    admin_note TEXT DEFAULT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
                 
@@ -182,6 +183,21 @@ try {
             $pdo->exec("ALTER TABLE meetings ADD COLUMN meeting_type VARCHAR(50) DEFAULT 'meeting'");
         } else {
             $pdo->exec("ALTER TABLE meetings ADD COLUMN `meeting_type` VARCHAR(50) DEFAULT 'meeting' AFTER `description`");
+        }
+    } catch (\Exception $migration_error) {
+        // Ignore if failed
+    }
+}
+
+// Auto-migrate schema: Add admin_note column if it doesn't exist
+try {
+    $pdo->query("SELECT admin_note FROM meetings LIMIT 1");
+} catch (\Exception $ex) {
+    try {
+        if ($is_sqlite) {
+            $pdo->exec("ALTER TABLE meetings ADD COLUMN admin_note TEXT DEFAULT NULL");
+        } else {
+            $pdo->exec("ALTER TABLE meetings ADD COLUMN `admin_note` TEXT DEFAULT NULL AFTER `doc_file`");
         }
     } catch (\Exception $migration_error) {
         // Ignore if failed

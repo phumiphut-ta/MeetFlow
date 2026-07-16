@@ -517,6 +517,11 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                             <?php if (!empty($m['description'])): ?>
                                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;"><?= htmlspecialchars($m['description']) ?></div>
                             <?php endif; ?>
+                            <?php if ($isAdmin && !empty($m['admin_note'])): ?>
+                                <div style="font-size: 0.8rem; background: rgba(244, 63, 94, 0.08); border-left: 2px solid #f43f5e; color: #fda4af; padding: 4px 8px; border-radius: 4px; margin-top: 6px; display: inline-block;">
+                                    <i class="fa-solid fa-user-shield" style="font-size: 0.75rem; color: #f43f5e;"></i> <strong>บันทึกเฉพาะแอดมิน:</strong> <?= htmlspecialchars($m['admin_note']) ?>
+                                </div>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <?php if ($m['doc_no']): ?>
