@@ -53,6 +53,16 @@ function notifyDiscord($action, $meeting, $attendees = []) {
         $monthName = $thaiMonths[intval($dateParts[1])];
         $thaiDate = intval($dateParts[2]) . ' ' . $monthName . ' ' . $thaiYear;
 
+        // If multi-day event
+        $hasEndDate = !empty($meeting['end_date']) && $meeting['end_date'] !== $meeting['meeting_date'];
+        if ($hasEndDate) {
+            $endDateParts = explode('-', $meeting['end_date']);
+            $endThaiYear = intval($endDateParts[0]) + 543;
+            $endMonthName = $thaiMonths[intval($endDateParts[1])];
+            $endThaiDate = intval($endDateParts[2]) . ' ' . $endMonthName . ' ' . $endThaiYear;
+            $thaiDate = "$thaiDate ถึง $endThaiDate";
+        }
+
         $startTime = substr($meeting['start_time'], 0, 5);
         $endTime = substr($meeting['end_time'], 0, 5);
         $isAllDay = ($startTime === '08:30' && $endTime === '16:30');

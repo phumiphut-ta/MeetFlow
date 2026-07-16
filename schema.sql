@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `meetings` (
     `description` TEXT,
     `meeting_type` VARCHAR(50) DEFAULT 'meeting',
     `meeting_date` DATE NOT NULL,
+    `end_date` DATE DEFAULT NULL,
     `start_time` TIME NOT NULL,
     `end_time` TIME NOT NULL,
     `doc_no` VARCHAR(100) DEFAULT NULL,

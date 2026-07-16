@@ -41,9 +41,9 @@ try {
         exit();
     }
 
-    // 4. Retrieve meetings/trainings scheduled for today
-    $stmtMeetings = $pdo->prepare("SELECT * FROM meetings WHERE meeting_date = ? ORDER BY start_time ASC");
-    $stmtMeetings->execute([$todayDate]);
+    // 4. Retrieve meetings/trainings scheduled for today (including multi-day events)
+    $stmtMeetings = $pdo->prepare("SELECT * FROM meetings WHERE meeting_date = ? OR (end_date IS NOT NULL AND ? BETWEEN meeting_date AND end_date) ORDER BY start_time ASC");
+    $stmtMeetings->execute([$todayDate, $todayDate]);
     $meetings = $stmtMeetings->fetchAll();
 
     // If no meetings today, we just mark today as run and exit (avoid spamming empty notifications)

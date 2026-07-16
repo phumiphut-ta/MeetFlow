@@ -51,13 +51,13 @@ if ($searchQuery !== '') {
     }
 } else {
     try {
-        // Fetch upcoming meetings (today and onwards)
+        // Fetch upcoming meetings (today and onwards, including multi-day events active today)
         $today = date('Y-m-d');
         $sql = "SELECT * FROM meetings 
-                WHERE meeting_date >= ? 
+                WHERE meeting_date >= ? OR (end_date IS NOT NULL AND end_date >= ?) 
                 ORDER BY meeting_date ASC, start_time ASC";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([$today]);
+        $stmt->execute([$today, $today]);
         $upcomingResults = $stmt->fetchAll();
         
         // Fetch attendees for all upcoming meetings
@@ -88,15 +88,16 @@ $groupedMeetings = [
 ];
 
 foreach ($targetList as $meeting) {
-    $date = $meeting['meeting_date'];
+    $start = $meeting['meeting_date'];
+    $end = !empty($meeting['end_date']) ? $meeting['end_date'] : $start;
     
-    if ($date < $today) {
-        $groupedMeetings['past'][] = $meeting;
-    } elseif ($date === $today) {
+    if ($today >= $start && $today <= $end) {
         $groupedMeetings['today'][] = $meeting;
-    } elseif ($date >= $thisMonday && $date <= $thisSunday) {
+    } elseif ($end < $today) {
+        $groupedMeetings['past'][] = $meeting;
+    } elseif ($start >= $thisMonday && $start <= $thisSunday) {
         $groupedMeetings['this_week'][] = $meeting;
-    } elseif ($date >= $thisMonthStart && $date <= $thisMonthEnd) {
+    } elseif ($start >= $thisMonthStart && $start <= $thisMonthEnd) {
         $groupedMeetings['this_month'][] = $meeting;
     } else {
         $groupedMeetings['next_months'][] = $meeting;
@@ -108,10 +109,19 @@ function renderLiffMeetingsGroup($meetingsList, $thaiMonths, $isPast = false) {
     global $meetingTypes;
     foreach ($meetingsList as $meeting) {
         // Parse date to Thai format
-        $dateParts = explode('-', $meeting['meeting_date']);
-        $thaiYear = intval($dateParts[0]) + 543;
-        $monthName = $thaiMonths[intval($dateParts[1])];
-        $dateStr = intval($dateParts[2]) . ' ' . $monthName . ' ' . $thaiYear;
+        $startDateParts = explode('-', $meeting['meeting_date']);
+        $startThaiYear = intval($startDateParts[0]) + 543;
+        $startMonthName = $thaiMonths[intval($startDateParts[1])];
+        $dateStr = intval($startDateParts[2]) . ' ' . $startMonthName . ' ' . $startThaiYear;
+        
+        $hasEndDate = !empty($meeting['end_date']) && $meeting['end_date'] !== $meeting['meeting_date'];
+        if ($hasEndDate) {
+            $endDateParts = explode('-', $meeting['end_date']);
+            $endThaiYear = intval($endDateParts[0]) + 543;
+            $endMonthName = $thaiMonths[intval($endDateParts[1])];
+            $endDateStr = intval($endDateParts[2]) . ' ' . $endMonthName . ' ' . $endThaiYear;
+            $dateStr = "$dateStr ถึง $endDateStr";
+        }
         
         $start = date('H:i', strtotime($meeting['start_time']));
         $end = date('H:i', strtotime($meeting['end_time']));

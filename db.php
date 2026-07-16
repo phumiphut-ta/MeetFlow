@@ -43,6 +43,7 @@ try {
                     title VARCHAR(255) NOT NULL,
                     description TEXT,
                     meeting_date DATE NOT NULL,
+                    end_date DATE DEFAULT NULL,
                     start_time TIME NOT NULL,
                     end_time TIME NOT NULL,
                     doc_no VARCHAR(100) DEFAULT NULL,
@@ -198,6 +199,23 @@ try {
             $pdo->exec("ALTER TABLE meetings ADD COLUMN admin_note TEXT DEFAULT NULL");
         } else {
             $pdo->exec("ALTER TABLE meetings ADD COLUMN `admin_note` TEXT DEFAULT NULL AFTER `doc_file`");
+        }
+    } catch (\Exception $migration_error) {
+        // Ignore if failed
+    }
+}
+
+// Auto-migrate schema: Add end_date column if it doesn't exist
+try {
+    $pdo->query("SELECT end_date FROM meetings LIMIT 1");
+} catch (\Exception $ex) {
+    try {
+        if ($is_sqlite) {
+            $pdo->exec("ALTER TABLE meetings ADD COLUMN end_date DATE DEFAULT NULL");
+            $pdo->exec("UPDATE meetings SET end_date = meeting_date WHERE end_date IS NULL");
+        } else {
+            $pdo->exec("ALTER TABLE meetings ADD COLUMN `end_date` DATE DEFAULT NULL AFTER `meeting_date`");
+            $pdo->exec("UPDATE meetings SET `end_date` = `meeting_date` WHERE `end_date` IS NULL");
         }
     } catch (\Exception $migration_error) {
         // Ignore if failed

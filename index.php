@@ -60,20 +60,30 @@ try {
     ];
 }
 
-// Fetch meetings for this month
+// Fetch meetings for this month (including overlapping multi-day events)
 try {
     $startDate = sprintf('%04d-%02d-01', $year, $month);
     $endDate = sprintf('%04d-%02d-%02d', $year, $month, $daysInMonth);
     
-    $stmt = $pdo->prepare("SELECT * FROM meetings WHERE meeting_date BETWEEN ? AND ? ORDER BY start_time ASC");
-    $stmt->execute([$startDate, $endDate]);
+    $stmt = $pdo->prepare("SELECT * FROM meetings WHERE meeting_date <= ? AND end_date >= ? ORDER BY start_time ASC");
+    $stmt->execute([$endDate, $startDate]);
     $meetings = $stmt->fetchAll();
     
-    // Group meetings by day number
+    // Group meetings by day number (can span multiple days)
     $meetingsByDay = [];
     foreach ($meetings as $meeting) {
-        $dayNum = intval(date('j', strtotime($meeting['meeting_date'])));
-        $meetingsByDay[$dayNum][] = $meeting;
+        $startSec = strtotime($meeting['meeting_date']);
+        $endSec = !empty($meeting['end_date']) ? strtotime($meeting['end_date']) : $startSec;
+        
+        // Loop through each day the meeting spans
+        for ($current = $startSec; $current <= $endSec; $current = strtotime('+1 day', $current)) {
+            $currYear = intval(date('Y', $current));
+            $currMonth = intval(date('n', $current));
+            if ($currYear === $year && $currMonth === $month) {
+                $dayNum = intval(date('j', $current));
+                $meetingsByDay[$dayNum][] = $meeting;
+            }
+        }
     }
 } catch (\PDOException $e) {
     $meetingsByDay = [];
@@ -233,10 +243,17 @@ try {
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="meeting_date">วันที่นัดหมาย <span style="color: var(--danger)">*</span></label>
-                    <input type="date" id="meeting_date" name="meeting_date" required>
+                    <label for="meeting_date">วันที่เริ่มต้น <span style="color: var(--danger)">*</span></label>
+                    <input type="date" id="meeting_date" name="meeting_date" required onchange="document.getElementById('end_date').min = this.value; if(document.getElementById('end_date').value < this.value) { document.getElementById('end_date').value = this.value; }">
                 </div>
                 <div class="form-group">
+                    <label for="end_date">วันที่สิ้นสุด <span style="color: var(--danger)">*</span></label>
+                    <input type="date" id="end_date" name="end_date" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="width: 100%;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <span style="font-weight: 500; font-size: 0.9rem;">เวลาการประชุม / อบรม <span style="color: var(--danger)">*</span></span>
                         <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; user-select: none; color: var(--text-secondary);">
@@ -469,10 +486,14 @@ try {
             
             if (dateStr) {
                 document.getElementById('meeting_date').value = dateStr;
+                document.getElementById('end_date').value = dateStr;
+                document.getElementById('end_date').min = dateStr;
             } else {
                 // Default to today
                 const today = new Date().toISOString().split('T')[0];
                 document.getElementById('meeting_date').value = today;
+                document.getElementById('end_date').value = today;
+                document.getElementById('end_date').min = today;
             }
 
             // Default times
@@ -568,11 +589,21 @@ try {
                         document.getElementById('view_title').innerText = meeting.title;
                         
                         // Parse date to Thai format
-                        const dateParts = meeting.meeting_date.split('-');
-                        const thaiYear = parseInt(dateParts[0]) + 543;
+                        const startParts = meeting.meeting_date.split('-');
+                        const startThaiYear = parseInt(startParts[0]) + 543;
                         const months = <?= json_encode($thaiMonths) ?>;
-                        const monthName = months[parseInt(dateParts[1])];
-                        const dateStr = `${parseInt(dateParts[2])} ${monthName} ${thaiYear}`;
+                        const startMonthName = months[parseInt(startParts[1])];
+                        const startDateStr = `${parseInt(startParts[2])} ${startMonthName} ${startThaiYear}`;
+                        
+                        let dateStr = startDateStr;
+                        if (meeting.end_date && meeting.end_date !== meeting.meeting_date) {
+                            const endParts = meeting.end_date.split('-');
+                            const endThaiYear = parseInt(endParts[0]) + 543;
+                            const endMonthName = months[parseInt(endParts[1])];
+                            const endDateStr = `${parseInt(endParts[2])} ${endMonthName} ${endThaiYear}`;
+                            dateStr = `${startDateStr} ถึง ${endDateStr}`;
+                        }
+
                         const start = meeting.start_time.substring(0, 5);
                         const end = meeting.end_time.substring(0, 5);
                         const isAllDay = (start === '08:30' && end === '16:30');
@@ -685,6 +716,8 @@ try {
             document.getElementById('description').value = meeting.description || '';
             document.getElementById('meeting_type').value = meeting.meeting_type || "meeting";
             document.getElementById('meeting_date').value = meeting.meeting_date;
+            document.getElementById('end_date').value = meeting.end_date || meeting.meeting_date;
+            document.getElementById('end_date').min = meeting.meeting_date;
             const startVal = meeting.start_time.substring(0, 5);
             const endVal = meeting.end_time.substring(0, 5);
             const isAllDay = (startVal === '08:30' && endVal === '16:30');

@@ -79,9 +79,12 @@ $upcomingMeetings = [];
 $pastMeetings = [];
 
 foreach ($allMeetings as $m) {
-    if ($m['meeting_date'] === $todayDate) {
+    $start = $m['meeting_date'];
+    $end = !empty($m['end_date']) ? $m['end_date'] : $start;
+
+    if ($todayDate >= $start && $todayDate <= $end) {
         $todayMeetings[] = $m;
-    } elseif ($m['meeting_date'] > $todayDate) {
+    } elseif ($start > $todayDate) {
         $upcomingMeetings[] = $m;
     } else {
         $pastMeetings[] = $m;
@@ -488,6 +491,15 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                     $thaiYear = intval($dateParts[0]) + 543;
                     $mShort = $thaiMonthsShort[intval($dateParts[1])];
                     $dateStr = intval($dateParts[2]) . ' ' . $mShort . ' ' . substr($thaiYear, 2, 2);
+                    
+                    $hasEndDate = !empty($m['end_date']) && $m['end_date'] !== $m['meeting_date'];
+                    if ($hasEndDate) {
+                        $endDateParts = explode('-', $m['end_date']);
+                        $endThaiYear = intval($endDateParts[0]) + 543;
+                        $endMShort = $thaiMonthsShort[intval($endDateParts[1])];
+                        $endDateStr = intval($endDateParts[2]) . ' ' . $endMShort . ' ' . substr($endThaiYear, 2, 2);
+                        $dateStr = "$dateStr - $endDateStr";
+                    }
                     
                     $start = substr($m['start_time'], 0, 5);
                     $end = substr($m['end_time'], 0, 5);

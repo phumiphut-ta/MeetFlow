@@ -30,6 +30,7 @@ $office_no = isset($_POST['office_no']) ? trim($_POST['office_no']) : '';
 $meeting_link = isset($_POST['meeting_link']) ? trim($_POST['meeting_link']) : '';
 $meeting_type = isset($_POST['meeting_type']) ? trim($_POST['meeting_type']) : 'meeting';
 $admin_note = isset($_POST['admin_note']) && trim($_POST['admin_note']) !== '' ? trim($_POST['admin_note']) : null;
+$end_date = isset($_POST['end_date']) && trim($_POST['end_date']) !== '' ? trim($_POST['end_date']) : $meeting_date;
 
 // Validate required fields
 if (empty($title) || empty($meeting_date) || empty($start_time) || empty($end_time)) {
@@ -124,6 +125,7 @@ try {
                 description = ?, 
                 meeting_type = ?, 
                 meeting_date = ?, 
+                end_date = ?, 
                 start_time = ?, 
                 end_time = ?, 
                 doc_no = ?, 
@@ -135,7 +137,7 @@ try {
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            $title, $description, $meeting_type, $meeting_date, $start_time, $end_time,
+            $title, $description, $meeting_type, $meeting_date, $end_date, $start_time, $end_time,
             $doc_no, $office_no, $meeting_link, $final_file, $admin_note, $id
         ]);
 
@@ -147,12 +149,12 @@ try {
 
     } else {
         // --- INSERT NEW MEETING ---
-        $sql = "INSERT INTO meetings (title, description, meeting_type, meeting_date, start_time, end_time, doc_no, office_no, meeting_link, doc_file, admin_note) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO meetings (title, description, meeting_type, meeting_date, end_date, start_time, end_time, doc_no, office_no, meeting_link, doc_file, admin_note) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            $title, $description, $meeting_type, $meeting_date, $start_time, $end_time,
+            $title, $description, $meeting_type, $meeting_date, $end_date, $start_time, $end_time,
             $doc_no, $office_no, $meeting_link, $uploaded_filename, $admin_note
         ]);
 
@@ -176,6 +178,7 @@ try {
         'description' => $description,
         'meeting_type' => $meeting_type,
         'meeting_date' => $meeting_date,
+        'end_date' => $end_date,
         'start_time' => $start_time,
         'end_time' => $end_time,
         'doc_no' => $doc_no,
