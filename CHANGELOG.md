@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Database Temporary Sessions**: Created the `temporary_tokens` table to handle single-use, 10-minute expiring tokens.
 - **Dynamic Client Synchronization**: Integrated local offline QR code rendering (`assets/qrcode.min.js`) and live AJAX status polling to auto-update form input states upon mobile upload completion.
 
+### Fixed
+- **Inline Delete Confirmation**: Replaced standard browser-blocking `confirm()` calls with a sleek inline confirmation toggle on the delete button within the details dialog, preventing native `<dialog>` elements from closing unexpectedly due to focus loss.
+
 ---
 
 ## [1.5.0] - 2026-07-16

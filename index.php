@@ -401,6 +401,7 @@ try {
             </div>
         </div>
         <div class="dialog-footer-actions">
+            <button type="button" class="btn btn-secondary" id="cancelDeleteBtn" style="display: none; background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border-glass);"><i class="fa-solid fa-xmark"></i> ยกเลิกการลบ</button>
             <button type="button" class="btn btn-danger" id="deleteMeetingBtn" style="display: none;"><i class="fa-solid fa-trash"></i> ลบข้อมูล</button>
             <button type="button" class="btn btn-info" id="shareMeetingBtn" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 6px;"><i class="fa-solid fa-share-nodes"></i> คัดลอกลิงก์ข้อมูล</button>
             <button type="button" class="btn btn-primary" id="editMeetingBtn" style="display: none;"><i class="fa-solid fa-edit"></i> แก้ไขข้อมูล</button>
@@ -687,15 +688,45 @@ try {
                         // Show/Hide Edit & Delete controls depending on Admin role
                         const delBtn = document.getElementById('deleteMeetingBtn');
                         const editBtn = document.getElementById('editMeetingBtn');
+                        const cancelDelBtn = document.getElementById('cancelDeleteBtn');
+                        
+                        // Reset Delete button state
+                        if (delBtn) {
+                            delBtn.innerHTML = '<i class="fa-solid fa-trash"></i> ลบข้อมูล';
+                            delBtn.style.background = '';
+                        }
+                        if (cancelDelBtn) {
+                            cancelDelBtn.style.display = 'none';
+                        }
+                        let deleteConfirmed = false;
                         
                         if (isAdmin) {
                             delBtn.style.display = 'inline-flex';
                             editBtn.style.display = 'inline-flex';
-                            delBtn.onclick = () => confirmDeleteMeeting(meeting.id);
+                            
+                            delBtn.onclick = () => {
+                                if (!deleteConfirmed) {
+                                    deleteConfirmed = true;
+                                    delBtn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ยืนยันการลบ?';
+                                    delBtn.style.background = 'var(--danger-gradient)';
+                                    cancelDelBtn.style.display = 'inline-flex';
+                                } else {
+                                    executeDeleteMeeting(meeting.id);
+                                }
+                            };
+                            
+                            cancelDelBtn.onclick = () => {
+                                deleteConfirmed = false;
+                                delBtn.innerHTML = '<i class="fa-solid fa-trash"></i> ลบข้อมูล';
+                                delBtn.style.background = '';
+                                cancelDelBtn.style.display = 'none';
+                            };
+                            
                             editBtn.onclick = () => openEditMeetingModal(meeting);
                         } else {
                             delBtn.style.display = 'none';
                             editBtn.style.display = 'none';
+                            if (cancelDelBtn) cancelDelBtn.style.display = 'none';
                         }
 
                         const dialog = document.getElementById('meetingDetailsDialog');
@@ -886,32 +917,31 @@ try {
             document.getElementById('qr_upload_panel').style.display = 'none';
         }
 
-        // Confirm meeting deletion (Only if Admin)
-        function confirmDeleteMeeting(meetingId) {
+        // Execute meeting deletion (Only if Admin)
+        function executeDeleteMeeting(meetingId) {
             if (!isAdmin) return;
-            if (confirm('คุณต้องการลบข้อมูลการนัดประชุมนี้หรือไม่? (ข้อมูลผู้เข้าร่วมและไฟล์แนบจะถูกลบไปด้วย)')) {
-                fetch('delete_meeting.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id: meetingId })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        closeMeetingDetailsDialog();
-                        window.location.reload();
-                    } else {
-                        alert(data.message);
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-                });
-            }
+            
+            fetch('delete_meeting.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: meetingId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    closeMeetingDetailsDialog();
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการลบข้อมูล');
+            });
         }
     </script>
 </body>
