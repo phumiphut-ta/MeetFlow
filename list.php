@@ -433,30 +433,72 @@ $thaiMonthsShort = [
             });
         }
 
-        // Admin Confirm meeting deletion (AJAX)
-        function confirmDeleteMeeting(meetingId) {
-            if (confirm('คุณต้องการลบข้อมูลการนัดประชุมนี้หรือไม่? (ข้อมูลผู้เข้าร่วมและไฟล์แนบจะถูกลบไปด้วย)')) {
-                fetch('delete_meeting.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ id: meetingId })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        window.location.reload();
+        // Handle inline delete confirmation for list page (Only if Admin)
+        const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
+        if (isAdmin) {
+            document.querySelectorAll('.btn-delete-action').forEach(btn => {
+                let deleteConfirmed = false;
+                let cancelBtn = null;
+                
+                btn.addEventListener('click', function(e) {
+                    const meetingId = this.getAttribute('data-id');
+                    if (!deleteConfirmed) {
+                        deleteConfirmed = true;
+                        this.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ยืนยันลบ?';
+                        this.style.background = 'var(--danger-gradient)';
+                        this.style.color = '#fff';
+                        
+                        // Create and insert Cancel button
+                        cancelBtn = document.createElement('button');
+                        cancelBtn.type = 'button';
+                        cancelBtn.className = 'btn';
+                        cancelBtn.style.padding = '6px 10px';
+                        cancelBtn.style.fontSize = '0.8rem';
+                        cancelBtn.style.background = 'rgba(255, 255, 255, 0.15)';
+                        cancelBtn.style.color = 'var(--text-secondary)';
+                        cancelBtn.style.border = '1px solid var(--border-glass)';
+                        cancelBtn.style.borderRadius = '6px';
+                        cancelBtn.style.marginLeft = '4px';
+                        cancelBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> ยกเลิก';
+                        
+                        cancelBtn.addEventListener('click', function(cancelEvent) {
+                            cancelEvent.stopPropagation();
+                            deleteConfirmed = false;
+                            btn.innerHTML = '<i class="fa-solid fa-trash"></i> ลบ';
+                            btn.style.background = 'rgba(239, 68, 68, 0.15)';
+                            btn.style.color = '#f87171';
+                            cancelBtn.remove();
+                        });
+                        
+                        this.parentNode.appendChild(cancelBtn);
                     } else {
-                        alert(data.message);
+                        executeDeleteMeeting(meetingId);
                     }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('เกิดข้อผิดพลาดในการลบข้อมูล');
                 });
-            }
+            });
+        }
+        
+        function executeDeleteMeeting(meetingId) {
+            fetch('delete_meeting.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: meetingId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('เกิดข้อผิดพลาดในการลบข้อมูล');
+            });
         }
     </script>
 </body>
@@ -578,7 +620,7 @@ function renderMeetingsTable($meetingsList, $thaiMonthsShort, $isAdmin) {
                             <td>
                                 <div class="list-actions">
                                     <a href="index.php?edit=<?= $m['id'] ?>&redirect=list.php" class="btn" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(96, 165, 250, 0.15); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3); border-radius: 6px;" title="แก้ไข"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</a>
-                                    <button type="button" class="btn" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;" onclick="confirmDeleteMeeting(<?= $m['id'] ?>)" title="ลบ"><i class="fa-solid fa-trash"></i> ลบ</button>
+                                    <button type="button" class="btn btn-delete-action" data-id="<?= $m['id'] ?>" style="padding: 6px 10px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;" title="ลบ"><i class="fa-solid fa-trash"></i> ลบ</button>
                                 </div>
                             </td>
                         <?php endif; ?>
