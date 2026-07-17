@@ -1,7 +1,0 @@
-# Ignore all uploaded files
-*
-
-# Keep configuration and security files in Git
-!.gitignore
-!web.config
-!.htaccess

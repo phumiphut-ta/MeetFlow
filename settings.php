@@ -378,7 +378,131 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn btn-primary" style="background: var(--success-gradient);"><i class="fa-solid fa-check"></i> อัปเดตรหัสผ่านใหม่</button>
                 </form>
             </div>
+
+            <!-- Storage & Attachment Cleanup Box -->
+            <div class="settings-card" style="grid-column: span 2;">
+                <h2><i class="fa-solid fa-hard-drive" style="color: #10b981;"></i> จัดการพื้นที่จัดเก็บข้อมูลและไฟล์แนบ</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                    <!-- Column 1: Purge Old Attachments -->
+                    <div style="background: rgba(15, 23, 42, 0.3); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px;">
+                        <h3 style="font-size: 1.05rem; font-weight: 600; color: white; margin-bottom: 8px;"><i class="fa-regular fa-file-excel"></i> ลบเฉพาะไฟล์แนบเก่า (ประวัติข้อความยังอยู่)</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 15px; line-height: 1.4;">
+                            ทำการลบไฟล์เอกสารแนบ (PDF/รูปภาพ) ของการประชุมที่สิ้นสุดลงแล้วและมีอายุเก่ากว่าเวลาที่กำหนดเพื่อคืนพื้นที่ให้เซิร์ฟเวอร์ โดยระบบจะเก็บประวัติหัวข้อประชุม รายละเอียด และผู้เข้าร่วมไว้ครบถ้วน
+                        </p>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label for="cleanup_months" style="margin-bottom: 6px; font-size: 0.85rem; color: var(--text-secondary);">เลือกช่วงเวลาขอบเขตข้อมูลที่ต้องการลบไฟล์แนบ:</label>
+                            <select id="cleanup_months" style="width: 100%; max-width: 250px;">
+                                <option value="3">3 เดือนขึ้นไป (อายุเก่ากว่า 3 เดือน)</option>
+                                <option value="6">6 เดือนขึ้นไป (อายุเก่ากว่า 6 เดือน)</option>
+                                <option value="12" selected>1 ปีขึ้นไป (อายุเก่ากว่า 1 ปี)</option>
+                                <option value="24">2 ปีขึ้นไป (อายุเก่ากว่า 2 ปี)</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" class="btn btn-danger" id="cleanupOldBtn" onclick="toggleCleanupOldConfirm()" style="background: var(--danger-gradient); font-size: 0.85rem; padding: 8px 14px;"><i class="fa-solid fa-trash-can"></i> เริ่มลบไฟล์แนบเก่า</button>
+                            <button type="button" class="btn btn-secondary" id="cancelCleanupOldBtn" onclick="resetCleanupOldConfirm()" style="display: none; font-size: 0.85rem; padding: 8px 14px; background: rgba(255, 255, 255, 0.1);"><i class="fa-solid fa-xmark"></i> ยกเลิก</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Column 2: Purge Orphaned Files -->
+                    <div style="background: rgba(15, 23, 42, 0.3); border: 1px solid var(--border-glass); border-radius: 16px; padding: 20px;">
+                        <h3 style="font-size: 1.05rem; font-weight: 600; color: white; margin-bottom: 8px;"><i class="fa-solid fa-broom"></i> ล้างเฉพาะไฟล์ขยะที่ไม่มีการเชื่อมโยง (Orphaned Uploads)</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 15px; line-height: 1.4;">
+                            สแกนหาไฟล์ในไดเรกทอรีอัปโหลดทั้งหมดที่มีลักษณะเป็นไฟล์ค้าง หรืออัปโหลดรูปค้างจากมือถือแต่แอดมินยกเลิกการบันทึกประชุม ซึ่งเป็นไฟล์ที่ไม่ได้ใช้งานและไม่มีชื่อในปฏิทิน เพื่อประหยัดพื้นที่อย่างปลอดภัย
+                        </p>
+                        <p style="font-size: 0.75rem; color: #10b981; margin-bottom: 30px; line-height: 1.4;">
+                            <i class="fa-solid fa-shield-halved"></i> ใช้งานได้อย่างปลอดภัย: ระบบจะไม่ลบไฟล์แนบหลักที่มีการใช้งานอยู่ในการนัดหมาย
+                        </p>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button type="button" class="btn btn-primary" id="cleanupOrphanedBtn" onclick="toggleCleanupOrphanedConfirm()" style="background: var(--primary-gradient); font-size: 0.85rem; padding: 8px 14px;"><i class="fa-solid fa-broom"></i> เริ่มล้างไฟล์ขยะตกค้าง</button>
+                            <button type="button" class="btn btn-secondary" id="cancelCleanupOrphanedBtn" onclick="resetCleanupOrphanedConfirm()" style="display: none; font-size: 0.85rem; padding: 8px 14px; background: rgba(255, 255, 255, 0.1);"><i class="fa-solid fa-xmark"></i> ยกเลิก</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
+
+    <script>
+        // Storage Cleanup Handlers
+        let cleanupOldConfirmed = false;
+        let cleanupOrphanedConfirmed = false;
+
+        function toggleCleanupOldConfirm() {
+            const btn = document.getElementById('cleanupOldBtn');
+            const cancelBtn = document.getElementById('cancelCleanupOldBtn');
+            const selectEl = document.getElementById('cleanup_months');
+            const months = selectEl.value;
+            
+            if (!cleanupOldConfirmed) {
+                cleanupOldConfirmed = true;
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ยืนยันลบไฟล์แนบอายุ ' + months + ' เดือนขึ้นไป?';
+                cancelBtn.style.display = 'inline-flex';
+            } else {
+                executeCleanupOld(months);
+            }
+        }
+
+        function resetCleanupOldConfirm() {
+            cleanupOldConfirmed = false;
+            const btn = document.getElementById('cleanupOldBtn');
+            const cancelBtn = document.getElementById('cancelCleanupOldBtn');
+            btn.innerHTML = '<i class="fa-solid fa-trash-can"></i> เริ่มลบไฟล์แนบเก่า';
+            cancelBtn.style.display = 'none';
+        }
+
+        function executeCleanupOld(months) {
+            fetch(`cleanup_attachments.php?action=delete_old&months=${months}`)
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    resetCleanupOldConfirm();
+                    window.location.reload();
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('เกิดข้อผิดพลาดในการลบไฟล์แนบ');
+                    resetCleanupOldConfirm();
+                });
+        }
+
+        function toggleCleanupOrphanedConfirm() {
+            const btn = document.getElementById('cleanupOrphanedBtn');
+            const cancelBtn = document.getElementById('cancelCleanupOrphanedBtn');
+            
+            if (!cleanupOrphanedConfirmed) {
+                cleanupOrphanedConfirmed = true;
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ยืนยันล้างไฟล์ขยะทั้งหมด?';
+                btn.style.background = 'var(--danger-gradient)';
+                cancelBtn.style.display = 'inline-flex';
+            } else {
+                executeCleanupOrphaned();
+            }
+        }
+
+        function resetCleanupOrphanedConfirm() {
+            cleanupOrphanedConfirmed = false;
+            const btn = document.getElementById('cleanupOrphanedBtn');
+            const cancelBtn = document.getElementById('cancelCleanupOrphanedBtn');
+            btn.innerHTML = '<i class="fa-solid fa-broom"></i> เริ่มล้างไฟล์ขยะตกค้าง';
+            btn.style.background = '';
+            cancelBtn.style.display = 'none';
+        }
+
+        function executeCleanupOrphaned() {
+            fetch('cleanup_attachments.php?action=delete_orphaned')
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    resetCleanupOrphanedConfirm();
+                    window.location.reload();
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('เกิดข้อผิดพลาดในการล้างไฟล์ขยะ');
+                    resetCleanupOrphanedConfirm();
+                });
+        }
+    </script>
 </body>
 </html>
