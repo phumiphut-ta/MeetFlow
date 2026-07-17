@@ -37,6 +37,10 @@ MeetFlow is a monthly calendar application for scheduling meetings and training 
 | `save_meeting.php` | **Meeting Save Endpoint**: Validates, saves, or edits meeting records. Handles file upload securely. |
 | `delete_meeting.php` | **Meeting Deletion Endpoint**: Triggers database record deletion. |
 | `get_meeting.php` | **Details API**: Endpoint returning JSON representations of a specific meeting for editing. |
+| `cleanup_attachments.php` | **Storage Management API**: Endpoint to delete old attachments (based on dynamic month cutoffs) and purge orphaned uploads that are no longer referenced in the database. |
+| `generate_upload_token.php` | **QR Code Helper API**: Generates secure temporary tokens with 10-minute expirations for mobile device uploads. |
+| `check_temp_upload.php` | **Upload Status Poller**: Checks if a file has been successfully uploaded via mobile link using a temporary token. |
+| `save_mobile_upload.php` | **Mobile Upload Endpoint**: Handles the physical upload of files from mobile browsers to the server's temporary uploads. |
 | `migrate.php` | **Database Migration Helper**: Troubleshooting script to verify or alter MySQL/SQLite tables if columns are missing. Outputs raw SQL fallback suggestions if IIS/MySQL lacks ALTER permissions. |
 | `meeting_types.php` | **Meeting Types Administration**: UI for creating new meeting types (with a custom label and HTML color picker), editing display names/colors, and deleting custom categories. |
 | `uploads/` | **Uploaded Documents folder**: Storage for PDF/doc attachments. |
