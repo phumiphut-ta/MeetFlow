@@ -23,7 +23,9 @@ MeetFlow is a monthly calendar application for scheduling meetings and training 
 
 | File Path | Description / Component Responsibility |
 | :--- | :--- |
-| `db.php` | **Database Connector**: Automatically tries connecting to MySQL via PDO. If it fails, falls back to local `meetflow.sqlite` file. Automatically executes tables creation and default seeds on fallback initialization. |
+| `config.php` | **Database Credentials**: Production database credentials returned as an array. Stored locally on servers and ignored from version control for security. |
+| `config.example.php` | **Database Credentials Template**: Pre-formatted database connection template. Used to copy into `config.php` on new deployments. |
+| `db.php` | **Database Connector**: Automatically loads credentials from `config.php` and tries connecting to MySQL via PDO. If it fails, falls back to local `meetflow.sqlite` file. Automatically executes tables creation and default seeds on fallback initialization. |
 | `schema.sql` | **Database Schema**: SQL script containing tables structures, relationship constraints (`ON DELETE CASCADE`), indexes, and default seeds for production MySQL. |
 | `index.php` | **Home Page (Monthly Calendar)**: Features responsive CSS grid layout, interactive day cards, and action dialog modals. Displays add/edit options for Admins, and view-only details for guests. |
 | `style.css` | **Central CSS Styling**: Governs themes, typography, custom scrollbars, glassmorphic card containers, and mobile responsiveness media queries (e.g., changes calendar structure to linear cards below 768px). |
