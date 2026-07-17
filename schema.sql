@@ -58,6 +58,15 @@ INSERT INTO `meeting_types` (`type_key`, `type_name`, `color`) VALUES
 ('training', 'อบรม', '#10b981')
 ON DUPLICATE KEY UPDATE `type_key`=`type_key`;
 
+-- Temporary Tokens Table (Mobile QR Code upload sessions)
+CREATE TABLE IF NOT EXISTS `temporary_tokens` (
+    `token` VARCHAR(64) PRIMARY KEY,
+    `meeting_id` INT DEFAULT 0,
+    `uploaded_file` VARCHAR(255) DEFAULT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `expires_at` DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Indexes for search optimization
 CREATE INDEX idx_meetings_date ON meetings(meeting_date);
 CREATE INDEX idx_meetings_doc_no ON meetings(doc_no);

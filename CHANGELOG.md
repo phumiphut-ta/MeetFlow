@@ -5,6 +5,15 @@ All notable changes to the **MeetFlow** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-07-17
+
+### Added
+- **Mobile QR Code Upload Feature**: Introduced a secure, temporary QR Code-driven workflow allowing administrators to upload attachments or take photos directly from their phone camera to populate active meeting forms on their computer.
+- **Database Temporary Sessions**: Created the `temporary_tokens` table to handle single-use, 10-minute expiring tokens.
+- **Dynamic Client Synchronization**: Integrated local offline QR code rendering (`assets/qrcode.min.js`) and live AJAX status polling to auto-update form input states upon mobile upload completion.
+
+---
+
 ## [1.5.0] - 2026-07-16
 
 ### Added

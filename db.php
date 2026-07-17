@@ -270,6 +270,37 @@ try {
     }
 }
 
+// Create temporary_tokens table if it doesn't exist
+try {
+    $pdo->query("SELECT 1 FROM temporary_tokens LIMIT 1");
+} catch (\Exception $ex) {
+    try {
+        if ($is_sqlite) {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS temporary_tokens (
+                    token VARCHAR(64) PRIMARY KEY,
+                    meeting_id INTEGER DEFAULT 0,
+                    uploaded_file VARCHAR(255) DEFAULT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at DATETIME NOT NULL
+                );
+            ");
+        } else {
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS `temporary_tokens` (
+                    `token` VARCHAR(64) PRIMARY KEY,
+                    `meeting_id` INT DEFAULT 0,
+                    `uploaded_file` VARCHAR(255) DEFAULT NULL,
+                    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    `expires_at` DATETIME NOT NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+    } catch (\Exception $migration_error) {
+        // Ignore if failed
+    }
+}
+
 // Utility function to convert Hex to RGBA for glass backgrounds
 if (!function_exists('hexToRgba')) {
     function hexToRgba($hex, $alpha = 0.2) {

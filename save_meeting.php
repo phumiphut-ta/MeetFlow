@@ -87,6 +87,15 @@ if (isset($_FILES['doc_file']) && $_FILES['doc_file']['error'] === UPLOAD_ERR_OK
     }
 }
 
+// Check for mobile uploaded file
+$mobile_uploaded_file = isset($_POST['mobile_uploaded_file']) ? trim($_POST['mobile_uploaded_file']) : '';
+if ($uploaded_filename === null && !empty($mobile_uploaded_file)) {
+    $safe_mobile_file = basename($mobile_uploaded_file);
+    if (file_exists(__DIR__ . '/uploads/' . $safe_mobile_file)) {
+        $uploaded_filename = $safe_mobile_file;
+    }
+}
+
 try {
     $pdo->beginTransaction();
 

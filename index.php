@@ -309,6 +309,20 @@ try {
                 <div id="current_file_indicator" style="margin-top: 8px; font-size: 0.85rem; display: none;">
                     <i class="fa-solid fa-paperclip"></i> ไฟล์ปัจจุบัน: <span id="current_file_name" style="color: var(--accent);"></span>
                 </div>
+                
+                <!-- Mobile Upload via QR Code -->
+                <input type="hidden" id="mobile_uploaded_file" name="mobile_uploaded_file" value="">
+                <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 0.85rem; color: var(--text-secondary);"><i class="fa-solid fa-mobile-screen-button"></i> สะดวกกว่า! ถ่ายรูป/อัปโหลดด้วยมือถือ:</span>
+                    <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);" onclick="startMobileUpload()"><i class="fa-solid fa-qrcode"></i> สแกน QR Code</button>
+                </div>
+                
+                <div id="qr_upload_panel" style="display: none; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px; margin-top: 10px; text-align: center; flex-direction: column; align-items: center; gap: 8px;">
+                    <div id="qrcode_container" style="display: inline-block; background: white; padding: 10px; border-radius: 8px; margin: 0 auto;"></div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">ใช้กล้องมือถือสแกนเพื่อเปิดกล้องถ่ายรูป / อัปโหลดไฟล์แนบ</p>
+                    <div id="qr_upload_status" style="font-size: 0.85rem; color: #10b981; font-weight: 500; margin: 4px 0;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังรอการอัปโหลดจากมือถือ...</div>
+                    <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3);" onclick="cancelMobileUpload()">ยกเลิกสแกน</button>
+                </div>
             </div>
 
             <!-- Attendee Management -->
@@ -394,6 +408,7 @@ try {
         </div>
     </dialog>
 
+    <script src="assets/qrcode.min.js"></script>
     <script>
         // Global variables to control UI logic based on Admin State
         const isAdmin = <?= $isAdmin ? 'true' : 'false' ?>;
@@ -474,6 +489,7 @@ try {
         // Open Dialog to Add Meeting
         function openAddMeetingModal(dateStr = null) {
             if (!isAdmin) return;
+            cancelMobileUpload();
             document.getElementById('meetingForm').reset();
             document.getElementById('meeting_id').value = "0";
             document.getElementById('modalTitle').innerText = "บันทึกข้อมูลการนัดประชุม / อบรม";
@@ -510,6 +526,7 @@ try {
         // Close Add/Edit Dialog
         function closeMeetingFormDialog() {
             if (isAdmin) {
+                cancelMobileUpload();
                 document.getElementById('meetingFormDialog').close();
                 // Redirection check for cancel/close operations
                 const urlParams = new URLSearchParams(window.location.search);
@@ -708,6 +725,7 @@ try {
         function openEditMeetingModal(meeting) {
             if (!isAdmin) return;
             closeMeetingDetailsDialog();
+            cancelMobileUpload();
             
             document.getElementById('meetingForm').reset();
             document.getElementById('meeting_id').value = meeting.id;
@@ -778,6 +796,94 @@ try {
                 console.error(err);
                 alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
             });
+        }
+
+        // Mobile Upload Polling variables
+        let mobileUploadInterval = null;
+        let qrCodeInstance = null;
+
+        function startMobileUpload() {
+            if (!isAdmin) return;
+            
+            const meetingId = document.getElementById('meeting_id').value || 0;
+            const statusDiv = document.getElementById('qr_upload_status');
+            statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้างรหัสสำหรับมือถือ...';
+            document.getElementById('qr_upload_panel').style.display = 'flex';
+            
+            fetch(`generate_upload_token.php?meeting_id=${meetingId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Clear old qr code
+                        document.getElementById('qrcode_container').innerHTML = '';
+                        // Render new qr code
+                        qrCodeInstance = new QRCode(document.getElementById("qrcode_container"), {
+                            text: data.url,
+                            width: 150,
+                            height: 150,
+                            colorDark : "#0f172a",
+                            colorLight : "#ffffff"
+                        });
+                        
+                        statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังรอการอัปโหลดจากมือถือ...';
+                        
+                        // Clear existing interval if any
+                        if (mobileUploadInterval) clearInterval(mobileUploadInterval);
+                        
+                        // Start polling
+                        mobileUploadInterval = setInterval(checkMobileUploadStatus, 2000, data.token);
+                    } else {
+                        alert('ไม่สามารถสร้างโทเค็นได้: ' + data.message);
+                        cancelMobileUpload();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('เกิดข้อผิดพลาดในการขอสิทธิ์อัปโหลดผ่านมือถือ');
+                    cancelMobileUpload();
+                });
+        }
+
+        function checkMobileUploadStatus(token) {
+            fetch(`check_temp_upload.php?token=${token}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.uploaded) {
+                        // Stop polling
+                        clearInterval(mobileUploadInterval);
+                        mobileUploadInterval = null;
+                        
+                        // Save filename to hidden input
+                        document.getElementById('mobile_uploaded_file').value = data.filename;
+                        document.getElementById('file-label-text').innerText = '📸 อัปโหลดผ่านมือถือสำเร็จ: ' + data.filename;
+                        
+                        // Update status text
+                        const statusDiv = document.getElementById('qr_upload_status');
+                        statusDiv.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> อัปโหลดสำเร็จ!';
+                        
+                        // Collapse panel after 1.5 seconds
+                        setTimeout(() => {
+                            document.getElementById('qr_upload_panel').style.display = 'none';
+                        }, 1500);
+                    } else if (!data.success) {
+                        // Token expired or invalid
+                        clearInterval(mobileUploadInterval);
+                        mobileUploadInterval = null;
+                        document.getElementById('qr_upload_status').innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e;"></i> หมดอายุหรือการเชื่อมต่อขัดข้อง';
+                    }
+                })
+                .catch(err => {
+                    console.error('Polling error:', err);
+                });
+        }
+
+        function cancelMobileUpload() {
+            if (mobileUploadInterval) {
+                clearInterval(mobileUploadInterval);
+                mobileUploadInterval = null;
+            }
+            document.getElementById('mobile_uploaded_file').value = '';
+            document.getElementById('qr_upload_panel').style.display = 'none';
         }
 
         // Confirm meeting deletion (Only if Admin)

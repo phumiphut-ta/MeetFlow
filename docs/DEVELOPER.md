@@ -88,6 +88,13 @@ erDiagram
         string password
         datetime created_at
     }
+    temporary_tokens {
+        string token PK
+        int meeting_id
+        string uploaded_file
+        datetime created_at
+        datetime expires_at
+    }
 
     meetings ||--o{ meeting_attendees : "has (ON DELETE CASCADE)"
     meetings }o--|| meeting_types : "classified by (type_key)"
@@ -154,6 +161,17 @@ erDiagram
 | `password` | VARCHAR(255) | NO | | | รหัสผ่านผู้ใช้งาน (เข้ารหัสความปลอดภัยด้วย Bcrypt เสมอ) |
 | `created_at` | TIMESTAMP | NO | | CURRENT_TIMESTAMP | วันเวลาที่สร้างบัญชีผู้ใช้ |
 
+#### 6) ตาราง `temporary_tokens` (เซสชันการอัปโหลดไฟล์จากโทรศัพท์มือถือ)
+เก็บข้อมูลลิงก์โทเค็นการอัปโหลดรูปภาพ/เอกสารชั่วคราวผ่านมือถือ (ความปลอดภัย: โทเค็นมีอายุใช้งาน 10 นาที)
+
+| Column Name | Data Type | Nullable | Key | Default | Description / Explanation |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `token` | VARCHAR(64) | NO | PK | | โทเค็นแบบสุ่มที่มีความปลอดภัยสูง |
+| `meeting_id` | INT | NO | | 0 | รหัสการนัดหมายประชุมอ้างอิง (0 สำหรับรายการใหม่) |
+| `uploaded_file` | VARCHAR(255) | YES | | NULL | ชื่อไฟล์ที่อัปโหลดสำเร็จผ่านมือถือ |
+| `created_at` | TIMESTAMP | NO | | CURRENT_TIMESTAMP | วันเวลาที่เริ่มขอโทเค็น |
+| `expires_at` | DATETIME | NO | | | วันเวลาหมดอายุการใช้งานของโทเค็น (สร้างขึ้น 10 นาทีถัดไป) |
+
 - **Indexes**: Added on `meetings(meeting_date)` for fast calendar monthly query, and composite index on `meetings(doc_no, office_no)` to accelerate search speeds within LINE LIFF queries.
 - **Meeting Type Classification**: Associated `meeting_type` VARCHAR(50) (default `'meeting'`) to reference records in the `meeting_types` table.
 - **All-day Events Convention**: All-day meetings (ตลอดทั้งวัน) are stored in the database with `start_time = '08:30:00'` and `end_time = '16:30:00'`. The frontend layouts (calendar cells, details modal, LINE LIFF cards, and PDF reports) identify this pattern and display the text `"ตลอดทั้งวัน"` in place of the time range.
@@ -161,6 +179,7 @@ erDiagram
 - **Multi-day Events support**: Spans calendar cells dynamically by checking overlap of range between `meeting_date` and `end_date`. The system formats the date range as `[Start Date] ถึง [End Date]` for display.
 - **Admin Note Security**: The column `admin_note` is securely stripped/unset in `get_meeting.php` if the requester is not authenticated as an admin, avoiding any data leak to the frontend for guests.
 - **Related Link Rebranding**: Links are generalized beyond meeting rooms using a link chain icon (`fa-link`) and named "Related Link" (ลิงก์ที่เกี่ยวข้อง) to accommodate forms, registration pages, and document URLs.
+- **Mobile QR Code Upload Architecture**: Temporary file upload sessions are managed via the `temporary_tokens` table. Expiring tokens are generated via `generate_upload_token.php`, checked via `check_temp_upload.php`, and files are saved via `save_mobile_upload.php`. PC clients render QR codes locally (`assets/qrcode.min.js`) and poll for status changes. Submitted files are validated against local filenames to prevent RCE or spoofing.
 
 ---
 
@@ -191,7 +210,7 @@ erDiagram
 ## 5. Deployment Checklist for AI & Engineers
 When transferring this codebase to production:
 1. Setup MySQL database with `schema.sql`.
-2. Configure DSN details inside `db.php` (set to production IP/credentials).
+2. Copy `config.example.php` to `config.php` and set the MySQL database credentials.
 3. Assign IIS AppPool read/write/modify permissions to the `uploads/` folder.
 4. Set up Task Scheduler/Cron trigger targeting `cron_notify.php` (e.g. running every 10 minutes).
 5. Bind LIFF APP in LINE Developer console pointing to `liff.php` and configure ID inside `liff.php`.
