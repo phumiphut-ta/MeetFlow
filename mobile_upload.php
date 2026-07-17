@@ -326,7 +326,7 @@ if (!empty($token)) {
                     <i class="fa-regular fa-file-image upload-icon" id="iconFile" style="display: none;"></i>
                     <p class="upload-text">ถ่ายภาพ หรือ เลือกเอกสารแนบ</p>
                     <p class="upload-hint">รองรับไฟล์ภาพ หรือ PDF (สูงสุด 10MB)</p>
-                    <input type="file" id="doc_file" name="doc_file" accept="image/*,application/pdf" capture="environment" onchange="handleFileSelected(this)">
+                    <input type="file" id="doc_file" name="doc_file" accept="image/*,application/pdf" onchange="handleFileSelected(this)">
                 </div>
 
                 <div class="selected-file-box" id="fileDetails">
