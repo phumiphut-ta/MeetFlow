@@ -11,6 +11,7 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] !== true) {
 require_once 'db.php';
 
 $meeting_id = isset($_GET['meeting_id']) ? intval($_GET['meeting_id']) : 0;
+$type = isset($_GET['type']) && $_GET['type'] === 'link' ? 'link' : 'file';
 
 try {
     // Generate secure random token
@@ -20,8 +21,8 @@ try {
     $expires_at = date('Y-m-d H:i:s', strtotime('+10 minutes'));
     
     // Insert token record into database
-    $stmt = $pdo->prepare("INSERT INTO temporary_tokens (token, meeting_id, expires_at) VALUES (?, ?, ?)");
-    $stmt->execute([$token, $meeting_id, $expires_at]);
+    $stmt = $pdo->prepare("INSERT INTO temporary_tokens (token, meeting_id, token_type, expires_at) VALUES (?, ?, ?, ?)");
+    $stmt->execute([$token, $meeting_id, $type, $expires_at]);
     
     // Build absolute URL for QR Code
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
@@ -33,11 +34,13 @@ try {
         $dir = '';
     }
     
-    $uploadUrl = "$protocol://$host$dir/mobile_upload.php?token=$token";
+    $targetFile = ($type === 'link') ? 'mobile_scan_link.php' : 'mobile_upload.php';
+    $uploadUrl = "$protocol://$host$dir/$targetFile?token=$token";
     
     echo json_encode([
         'success' => true,
         'token' => $token,
+        'type' => $type,
         'url' => $uploadUrl
     ]);
 } catch (\Exception $e) {

@@ -24,16 +24,25 @@ try {
         exit();
     }
     
-    if (!empty($tokenRecord['uploaded_file'])) {
+    if (!empty($tokenRecord['scanned_link'])) {
         echo json_encode([
             'success' => true,
             'uploaded' => true,
+            'type' => 'link',
+            'link' => $tokenRecord['scanned_link']
+        ]);
+    } else if (!empty($tokenRecord['uploaded_file'])) {
+        echo json_encode([
+            'success' => true,
+            'uploaded' => true,
+            'type' => 'file',
             'filename' => $tokenRecord['uploaded_file']
         ]);
     } else {
         echo json_encode([
             'success' => true,
-            'uploaded' => false
+            'uploaded' => false,
+            'type' => $tokenRecord['token_type'] ?? 'file'
         ]);
     }
 } catch (\Exception $e) {

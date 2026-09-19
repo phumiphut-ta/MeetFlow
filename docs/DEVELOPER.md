@@ -40,9 +40,11 @@ MeetFlow is a monthly calendar application for scheduling meetings and training 
 | `delete_meeting.php` | **Meeting Deletion Endpoint**: Triggers database record deletion. |
 | `get_meeting.php` | **Details API**: Endpoint returning JSON representations of a specific meeting for editing. |
 | `cleanup_attachments.php` | **Storage Management API**: Endpoint to delete old attachments (based on dynamic month cutoffs) and purge orphaned uploads that are no longer referenced in the database. |
-| `generate_upload_token.php` | **QR Code Helper API**: Generates secure temporary tokens with 10-minute expirations for mobile device uploads. |
-| `check_temp_upload.php` | **Upload Status Poller**: Checks if a file has been successfully uploaded via mobile link using a temporary token. |
+| `generate_upload_token.php` | **QR Code Helper API**: Generates secure temporary tokens with 10-minute expirations for mobile device uploads and camera link scanning (`type=file` or `type=link`). |
+| `check_temp_upload.php` | **Upload Status Poller**: Checks if a file or link has been successfully submitted via mobile using a temporary token. |
 | `save_mobile_upload.php` | **Mobile Upload Endpoint**: Handles the physical upload of files from mobile browsers to the server's temporary uploads. |
+| `save_scanned_link.php` | **Mobile Scanned Link Endpoint**: Saves scanned QR code URL/text or resets active session (`action=reset`) in `temporary_tokens`. |
+| `mobile_scan_link.php` | **Mobile Live Camera Scanner UI**: Web interface using BarcodeDetector and jsQR to scan QR codes on physical documents and auto-sync URLs to desktop. |
 | `migrate.php` | **Database Migration Helper**: Troubleshooting script to verify or alter MySQL/SQLite tables if columns are missing. Outputs raw SQL fallback suggestions if IIS/MySQL lacks ALTER permissions. |
 | `meeting_types.php` | **Meeting Types Administration**: UI for creating new meeting types (with a custom label and HTML color picker), editing display names/colors, and deleting custom categories. |
 | `uploads/` | **Uploaded Documents folder**: Storage for PDF/doc attachments. |
@@ -174,7 +176,9 @@ erDiagram
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `token` | VARCHAR(64) | NO | PK | | โทเค็นแบบสุ่มที่มีความปลอดภัยสูง |
 | `meeting_id` | INT | NO | | 0 | รหัสการนัดหมายประชุมอ้างอิง (0 สำหรับรายการใหม่) |
+| `token_type` | VARCHAR(20) | NO | | 'file' | ประเภทของโทเค็น (`'file'` สำหรับอัปโหลดไฟล์ หรือ `'link'` สำหรับสแกนลิงก์จากกล้อง) |
 | `uploaded_file` | VARCHAR(255) | YES | | NULL | ชื่อไฟล์ที่อัปโหลดสำเร็จผ่านมือถือ |
+| `scanned_link` | TEXT | YES | | NULL | URL หรือข้อความที่สแกนได้จาก QR Code บนมือถือ |
 | `created_at` | TIMESTAMP | NO | | CURRENT_TIMESTAMP | วันเวลาที่เริ่มขอโทเค็น |
 | `expires_at` | DATETIME | NO | | | วันเวลาหมดอายุการใช้งานของโทเค็น (สร้างขึ้น 10 นาทีถัดไป) |
 
@@ -186,6 +190,8 @@ erDiagram
 - **Admin Note Security**: The column `admin_note` is securely stripped/unset in `get_meeting.php` if the requester is not authenticated as an admin, avoiding any data leak to the frontend for guests.
 - **Related Link Rebranding**: Links are generalized beyond meeting rooms using a link chain icon (`fa-link`) and named "Related Link" (ลิงก์ที่เกี่ยวข้อง) to accommodate forms, registration pages, and document URLs.
 - **Mobile QR Code Upload Architecture**: Temporary file upload sessions are managed via the `temporary_tokens` table. Expiring tokens are generated via `generate_upload_token.php`, checked via `check_temp_upload.php`, and files are saved via `save_mobile_upload.php`. PC clients render QR codes locally (`assets/qrcode.min.js`) and poll for status changes. Submitted files are validated against local filenames to prevent RCE or spoofing.
+- **Mobile QR Code Link Scanner Architecture**: In the meeting modal under *Related Link* (`meeting_link`), administrators can click **"เพิ่มลิงก์จากกล้องมือถือ"**. This generates a temporary token (`type=link`) and displays an inline QR code via `qrcode.min.js`. When scanned with a smartphone, it opens `mobile_scan_link.php` which requests camera access via `getUserMedia` and scans physical QR codes using the native hardware-accelerated `BarcodeDetector` API (with local `assets/jsqr.min.js` and photo upload as fallbacks). Detected URLs are transmitted via `save_scanned_link.php`, and the desktop client automatically fills the input field `#meeting_link`, provides a visual highlight animation, and closes the QR scan panel.
+  - **Re-scan & Auto-Clear Lifecycle**: If an administrator needs to change or re-scan a link, clicking "สแกนใหม่" on the mobile client dispatches a POST request with `action=reset` to `save_scanned_link.php` to set `scanned_link = NULL`. The desktop client, which maintains continuous polling for up to 5 minutes of inactivity while the form modal remains open, detects this state and instantly resets `#meeting_link` to an empty string. Scanning a subsequent QR code automatically overwrites the input field with the new URL and re-triggers the highlight animation.
 
 ---
 

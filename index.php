@@ -286,8 +286,19 @@ try {
             </div>
 
             <div class="form-group">
-                <label for="meeting_link">ลิงก์ที่เกี่ยวข้อง (เช่น ลิงก์ประชุม, ลงทะเบียน, หรือเอกสารเพิ่มเติม)</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+                    <label for="meeting_link" style="margin-bottom: 0;">ลิงก์ที่เกี่ยวข้อง (เช่น ลิงก์ประชุม, ลงทะเบียน, หรือเอกสารเพิ่มเติม)</label>
+                    <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.8rem; background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.25);" onclick="startMobileLinkScan()"><i class="fa-solid fa-camera"></i> <i class="fa-solid fa-qrcode"></i> เพิ่มลิงก์จากกล้องมือถือ</button>
+                </div>
                 <input type="url" id="meeting_link" name="meeting_link" placeholder="เช่น https://zoom.us/... หรือ https://forms.gle/...">
+                
+                <!-- Mobile Link Scan via QR Code -->
+                <div id="qr_link_scan_panel" style="display: none; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--border-glass); border-radius: 8px; padding: 12px; margin-top: 10px; text-align: center; flex-direction: column; align-items: center; gap: 8px;">
+                    <div id="qrcode_link_container" style="display: inline-block; background: white; padding: 10px; border-radius: 8px; margin: 0 auto;"></div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">ใช้กล้องมือถือสแกนเพื่อเปิดกล้องมือถือสำหรับสแกน QR Code ลิงก์ที่ต้องการ</p>
+                    <div id="qr_link_scan_status" style="font-size: 0.85rem; color: #38bdf8; font-weight: 500; margin: 4px 0;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังรอการสแกนจากมือถือ...</div>
+                    <button type="button" class="btn btn-secondary" style="padding: 2px 8px; font-size: 0.75rem; background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3);" onclick="cancelMobileLinkScan()">ยกเลิกสแกน</button>
+                </div>
             </div>
 
             <div class="form-group" style="background: rgba(244, 63, 94, 0.03); border: 1px solid rgba(244, 63, 94, 0.15); border-radius: 8px; padding: 12px;">
@@ -491,6 +502,7 @@ try {
         function openAddMeetingModal(dateStr = null) {
             if (!isAdmin) return;
             cancelMobileUpload();
+            cancelMobileLinkScan();
             document.getElementById('meetingForm').reset();
             document.getElementById('meeting_id').value = "0";
             document.getElementById('modalTitle').innerText = "บันทึกข้อมูลการนัดประชุม / อบรม";
@@ -528,6 +540,7 @@ try {
         function closeMeetingFormDialog() {
             if (isAdmin) {
                 cancelMobileUpload();
+                cancelMobileLinkScan();
                 document.getElementById('meetingFormDialog').close();
                 // Redirection check for cancel/close operations
                 const urlParams = new URLSearchParams(window.location.search);
@@ -757,6 +770,7 @@ try {
             if (!isAdmin) return;
             closeMeetingDetailsDialog();
             cancelMobileUpload();
+            cancelMobileLinkScan();
             
             document.getElementById('meetingForm').reset();
             document.getElementById('meeting_id').value = meeting.id;
@@ -915,6 +929,133 @@ try {
             }
             document.getElementById('mobile_uploaded_file').value = '';
             document.getElementById('qr_upload_panel').style.display = 'none';
+        }
+
+        // Mobile Link Scan Polling variables
+        let mobileLinkInterval = null;
+        let mobileLinkTimeout = null;
+        let qrCodeLinkInstance = null;
+        let currentScannedLink = '';
+
+        function startMobileLinkScan() {
+            if (!isAdmin) return;
+            
+            const meetingId = document.getElementById('meeting_id').value || 0;
+            const statusDiv = document.getElementById('qr_link_scan_status');
+            statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้างรหัสสำหรับมือถือ...';
+            document.getElementById('qr_link_scan_panel').style.display = 'flex';
+            
+            fetch(`generate_upload_token.php?meeting_id=${meetingId}&type=link`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Clear old qr code
+                        document.getElementById('qrcode_link_container').innerHTML = '';
+                        // Render new qr code
+                        qrCodeLinkInstance = new QRCode(document.getElementById("qrcode_link_container"), {
+                            text: data.url,
+                            width: 150,
+                            height: 150,
+                            colorDark : "#0f172a",
+                            colorLight : "#ffffff"
+                        });
+                        
+                        statusDiv.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังรอการสแกนจากมือถือ...';
+                        
+                        // Clear existing interval and timeout if any
+                        if (mobileLinkInterval) clearInterval(mobileLinkInterval);
+                        if (mobileLinkTimeout) clearTimeout(mobileLinkTimeout);
+                        currentScannedLink = '';
+                        
+                        // Start polling every 2 seconds
+                        mobileLinkInterval = setInterval(checkMobileLinkStatus, 2000, data.token);
+
+                        // Auto-timeout polling after 5 minutes of inactivity
+                        mobileLinkTimeout = setTimeout(() => {
+                            cancelMobileLinkScan();
+                        }, 5 * 60 * 1000);
+                    } else {
+                        statusDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e;"></i> ' + (data.message || 'ไม่สามารถสร้างโทเค็นได้');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    statusDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #f43f5e;"></i> เกิดข้อผิดพลาดในการเชื่อมต่อ';
+                });
+        }
+
+        function checkMobileLinkStatus(token) {
+            fetch(`check_temp_upload.php?token=${token}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.uploaded && data.link) {
+                        // If link has changed (first scan or subsequent re-scan)
+                        if (data.link !== currentScannedLink) {
+                            currentScannedLink = data.link;
+                            
+                            // Fill link in meeting_link input
+                            const linkInput = document.getElementById('meeting_link');
+                            linkInput.value = data.link;
+                            
+                            // Highlight animation on input (green glow)
+                            linkInput.style.transition = 'all 0.3s ease';
+                            linkInput.style.borderColor = '#10b981';
+                            linkInput.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.4)';
+                            setTimeout(() => {
+                                linkInput.style.borderColor = '';
+                                linkInput.style.boxShadow = '';
+                            }, 2500);
+
+                            // Update status text
+                            const statusDiv = document.getElementById('qr_link_scan_status');
+                            if (statusDiv) {
+                                statusDiv.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> สแกนและกรอกลิงก์สำเร็จ!';
+                            }
+                            
+                            // Collapse panel after 1.5 seconds (if still visible)
+                            setTimeout(() => {
+                                const panel = document.getElementById('qr_link_scan_panel');
+                                if (panel) panel.style.display = 'none';
+                            }, 1500);
+
+                            // Reset 5-minute timeout on each successful scan
+                            if (mobileLinkTimeout) clearTimeout(mobileLinkTimeout);
+                            mobileLinkTimeout = setTimeout(cancelMobileLinkScan, 5 * 60 * 1000);
+                        }
+                    } else if (data.success && !data.uploaded && data.type === 'link') {
+                        // If user pressed "สแกนใหม่" on mobile, server has reset scanned_link to NULL
+                        if (currentScannedLink !== '') {
+                            currentScannedLink = '';
+                            const linkInput = document.getElementById('meeting_link');
+                            if (linkInput) {
+                                linkInput.value = '';
+                                linkInput.style.transition = 'all 0.3s ease';
+                                linkInput.style.borderColor = '#38bdf8';
+                                setTimeout(() => { linkInput.style.borderColor = ''; }, 1200);
+                            }
+                        }
+                    } else if (!data.success) {
+                        // Token expired or invalid
+                        cancelMobileLinkScan();
+                    }
+                })
+                .catch(err => {
+                    console.error('Polling link status error:', err);
+                });
+        }
+
+        function cancelMobileLinkScan() {
+            if (mobileLinkInterval) {
+                clearInterval(mobileLinkInterval);
+                mobileLinkInterval = null;
+            }
+            if (mobileLinkTimeout) {
+                clearTimeout(mobileLinkTimeout);
+                mobileLinkTimeout = null;
+            }
+            currentScannedLink = '';
+            const panel = document.getElementById('qr_link_scan_panel');
+            if (panel) panel.style.display = 'none';
         }
 
         // Execute meeting deletion (Only if Admin)

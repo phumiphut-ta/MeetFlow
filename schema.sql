@@ -62,7 +62,9 @@ ON DUPLICATE KEY UPDATE `type_key`=`type_key`;
 CREATE TABLE IF NOT EXISTS `temporary_tokens` (
     `token` VARCHAR(64) PRIMARY KEY,
     `meeting_id` INT DEFAULT 0,
+    `token_type` VARCHAR(20) DEFAULT 'file',
     `uploaded_file` VARCHAR(255) DEFAULT NULL,
+    `scanned_link` TEXT DEFAULT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     `expires_at` DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

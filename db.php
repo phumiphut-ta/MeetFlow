@@ -280,7 +280,9 @@ try {
                 CREATE TABLE IF NOT EXISTS temporary_tokens (
                     token VARCHAR(64) PRIMARY KEY,
                     meeting_id INTEGER DEFAULT 0,
+                    token_type VARCHAR(20) DEFAULT 'file',
                     uploaded_file VARCHAR(255) DEFAULT NULL,
+                    scanned_link TEXT DEFAULT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     expires_at DATETIME NOT NULL
                 );
@@ -290,11 +292,43 @@ try {
                 CREATE TABLE IF NOT EXISTS `temporary_tokens` (
                     `token` VARCHAR(64) PRIMARY KEY,
                     `meeting_id` INT DEFAULT 0,
+                    `token_type` VARCHAR(20) DEFAULT 'file',
                     `uploaded_file` VARCHAR(255) DEFAULT NULL,
+                    `scanned_link` TEXT DEFAULT NULL,
                     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     `expires_at` DATETIME NOT NULL
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             ");
+        }
+    } catch (\Exception $migration_error) {
+        // Ignore if failed
+    }
+}
+
+// Auto-migrate schema: Add token_type column to temporary_tokens if it doesn't exist
+try {
+    $pdo->query("SELECT token_type FROM temporary_tokens LIMIT 1");
+} catch (\Exception $ex) {
+    try {
+        if ($is_sqlite) {
+            $pdo->exec("ALTER TABLE temporary_tokens ADD COLUMN token_type VARCHAR(20) DEFAULT 'file'");
+        } else {
+            $pdo->exec("ALTER TABLE `temporary_tokens` ADD COLUMN `token_type` VARCHAR(20) DEFAULT 'file' AFTER `meeting_id`");
+        }
+    } catch (\Exception $migration_error) {
+        // Ignore if failed
+    }
+}
+
+// Auto-migrate schema: Add scanned_link column to temporary_tokens if it doesn't exist
+try {
+    $pdo->query("SELECT scanned_link FROM temporary_tokens LIMIT 1");
+} catch (\Exception $ex) {
+    try {
+        if ($is_sqlite) {
+            $pdo->exec("ALTER TABLE temporary_tokens ADD COLUMN scanned_link TEXT DEFAULT NULL");
+        } else {
+            $pdo->exec("ALTER TABLE `temporary_tokens` ADD COLUMN `scanned_link` TEXT DEFAULT NULL AFTER `uploaded_file`");
         }
     } catch (\Exception $migration_error) {
         // Ignore if failed

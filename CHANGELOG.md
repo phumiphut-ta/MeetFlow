@@ -5,6 +5,17 @@ All notable changes to the **MeetFlow** project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-09-19
+
+### Added
+- **Mobile QR Code Link Scanner Feature**: Added "เพิ่มลิงก์จากกล้องมือถือ" (Add Link via Mobile Camera) button in the Related Link (`meeting_link`) section of the meeting form modal.
+- **Hardware-Accelerated Live QR Scanning**: Built `mobile_scan_link.php` supporting live camera viewfinder using native `BarcodeDetector` API and local offline `assets/jsqr.min.js` fallback.
+- **Auto-sync & Token Management**: Extended `temporary_tokens` with `token_type` and `scanned_link` columns, updated `generate_upload_token.php` and `check_temp_upload.php`, and added `save_scanned_link.php` for seamless real-time syncing of scanned URLs directly into the desktop form.
+- **Re-scan & Auto-Clear Lifecycle**: Implemented reset signaling (`action=reset`) when clicking "สแกนใหม่" on mobile, automatically resetting the desktop input to empty and maintaining a 5-minute continuous polling lifecycle to overwrite the field upon scanning subsequent QR codes.
+- **Offline & Intranet Support**: Bundled `assets/jsqr.min.js` directly within the repository for zero external dependencies on offline Windows Server IIS deployments.
+
+---
+
 ## [1.6.0] - 2026-07-17
 
 ### Added
